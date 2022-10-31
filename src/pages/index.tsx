@@ -3,7 +3,7 @@ import { animated, useSpring } from "@react-spring/web";
 import { type NextPage } from "next";
 import { FC, useEffect, useRef } from "react";
 import { v4 } from "uuid";
-import { useDrag, useGesture, useHover } from "@use-gesture/react";
+import { useDrag } from "@use-gesture/react";
 
 const Home: NextPage = () => {
 	return <BoardContainer />;
@@ -50,22 +50,24 @@ const Board: FC<{ board: BoardType }> = ({ board }) => {
 	useEffect(() => {
 		const { x, y, width, height } =
 			boardRef.current?.getBoundingClientRect()!;
-		boardPositions.set(board.name, { x, y, width, height });
+		boardPositions.set(board.id, { x, y, width, height });
 	}, []);
 	return (
-		<div
-			ref={boardRef}
-			className="m-12 flex h-4/5 w-52 flex-col items-center gap-2 bg-blue-800 text-white"
-		>
+		<div className="h-4/5 w-52 bg-blue-800 text-white">
 			<h2 className="text-center text-xl">{board.name}</h2>
-			{board.items.map((x) => (
-				<Item key={x.id} item={x} />
-			))}
+			<div
+				className="flex h-full w-full flex-col items-center bg-red-300"
+				ref={boardRef}
+			>
+				{board.items.map((x) => (
+					<Item key={x.id} item={x} parentId={board.id} />
+				))}
+			</div>
 		</div>
 	);
 };
-const Item: FC<{ item: ItemType }> = ({ item }) => {
-	const [style, api] = useSpring(() => ({ to: { x: 0, y: 0 } }));
+const Item: FC<{ item: ItemType; parentId: string }> = ({ item, parentId }) => {
+	const [style, api] = useSpring(() => ({ to: { x: 0, y: 0, top: 0 } }));
 	const itemRef = useRef<HTMLDivElement>(null);
 	const bind = useDrag((state) => {
 		if (state.down) {
@@ -74,20 +76,40 @@ const Item: FC<{ item: ItemType }> = ({ item }) => {
 		} else {
 			let { x, y, width, height } =
 				itemRef.current?.getBoundingClientRect()!;
-			x += width / 2;
-			width = 1;
-			boardPositions.forEach((b, idx) => {
+			let colX = x; // colX and colWidth are used only for collision detection
+			let colWidth = width;
+			colX += colWidth / 2;
+			colWidth = 1;
+
+			for (let i of boardPositions) {
+				const [idx, b] = i;
 				if (
-					// collision detection
-					x < b.x + b.width &&
-					x + width > b.x &&
-					y < b.y + b.height &&
-					y + height > b.y
+					idx == parentId ||
+					!(
+						colX < b.x + b.width &&
+						colX + colWidth > b.x &&
+						y < b.y + b.height &&
+						y + height > b.y
+					)
 				) {
-					console.log(idx);
+					// no collision, get back
+					console.log("no collision");
+					api.start({
+						to: { x: 0, y: 0 },
+						config: { duration: 200 },
+					});
+					continue;
 				}
-			});
-			api.start({ to: { x: 0, y: 0 }, config: { duration: 200 } });
+				// collision detected
+				console.log("collision");
+				const parent = boardPositions.get(parentId)!;
+				api.start({
+					to: { x: b.x - parent.x, y: 0 },
+					config: { duration: 200 },
+				});
+				// TODO alter state, figure out ys
+				break;
+			}
 		}
 	});
 	return (
