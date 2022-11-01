@@ -1,42 +1,28 @@
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import { animated, useSpring } from "@react-spring/web";
 import { type NextPage } from "next";
-import { FC, useEffect, useRef } from "react";
-import { v4 } from "uuid";
+import { type FC, useEffect, useRef } from "react";
 import { useDrag } from "@use-gesture/react";
+import {
+	boardsAtom,
+	type BoardType,
+	type ItemType,
+	moveItemAtom,
+} from "../store";
+import { sleep } from "../utils/sleep";
 
 const Home: NextPage = () => {
 	return <BoardContainer />;
 };
 
 export default Home;
-interface ItemType {
-	data: string;
-	id: string;
-}
-interface BoardType {
-	name: string;
-	id: string;
-	items: ItemType[];
-}
-const boardsAtom = atom<BoardType[]>(() => [
-	{
-		name: "a",
-		id: v4(),
-		items: [
-			{ data: "costam", id: v4() },
-			{ data: "eloelo320", id: v4() },
-		],
-	},
-	{ name: "b", id: v4(), items: [{ data: "cosinnego", id: v4() }] },
-]);
 // store positions of all boards to figure out which one is the closest to dragged element
 const boardPositions: Map<
 	string,
 	{ x: number; y: number; width: number; height: number }
 > = new Map();
 const BoardContainer = () => {
-	const [boards, _setBoards] = useAtom(boardsAtom);
+	const [boards] = useAtom(boardsAtom);
 	return (
 		<div className="flex h-full w-fit min-w-full items-center justify-center gap-5 bg-blue-300">
 			{boards.map((x) => (
@@ -48,15 +34,16 @@ const BoardContainer = () => {
 const Board: FC<{ board: BoardType }> = ({ board }) => {
 	const boardRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
-		const { x, y, width, height } =
-			boardRef.current?.getBoundingClientRect()!;
+		const rect = boardRef.current?.getBoundingClientRect();
+		if (!rect) return;
+		const { x, y, width, height } = rect;
 		boardPositions.set(board.id, { x, y, width, height });
-	}, []);
+	}, [board.id]);
 	return (
 		<div className="h-4/5 w-52 bg-blue-800 text-white">
 			<h2 className="text-center text-xl">{board.name}</h2>
 			<div
-				className="flex h-full w-full flex-col items-center bg-red-300"
+				className="flex h-full w-full flex-col items-center gap-5 bg-blue-400 py-5"
 				ref={boardRef}
 			>
 				{board.items.map((x) => (
@@ -67,48 +54,49 @@ const Board: FC<{ board: BoardType }> = ({ board }) => {
 	);
 };
 const Item: FC<{ item: ItemType; parentId: string }> = ({ item, parentId }) => {
+	const [, moveItem] = useAtom(moveItemAtom);
 	const [style, api] = useSpring(() => ({ to: { x: 0, y: 0, top: 0 } }));
 	const itemRef = useRef<HTMLDivElement>(null);
-	const bind = useDrag((state) => {
+	const bind = useDrag(async (state) => {
 		if (state.down) {
 			const [x, y] = state.movement;
 			api.start({ to: { x, y: y }, config: { duration: 20 } });
 		} else {
-			let { x, y, width, height } =
-				itemRef.current?.getBoundingClientRect()!;
-			let colX = x; // colX and colWidth are used only for collision detection
-			let colWidth = width;
-			colX += colWidth / 2;
-			colWidth = 1;
+			const rect = itemRef.current?.getBoundingClientRect();
+			if (!rect) return;
+			const { x, y, width, height } = rect;
+			let centerX = x; // only check if center of dragged item collided with a board
+			const centerWidth = 20;
+			centerX += width / 2 - centerWidth / 2;
 
-			for (let i of boardPositions) {
+			for (const i of boardPositions) {
 				const [idx, b] = i;
 				if (
-					idx == parentId ||
-					!(
-						colX < b.x + b.width &&
-						colX + colWidth > b.x &&
-						y < b.y + b.height &&
-						y + height > b.y
-					)
+					centerX < b.x + b.width &&
+					centerX + centerWidth > b.x &&
+					y < b.y + b.height &&
+					y + height > b.y
 				) {
-					// no collision, get back
-					console.log("no collision");
+					// collision detected
+					console.log("collision");
+					const parent = boardPositions.get(parentId);
+					if (!parent) return;
+					const duration = 300;
 					api.start({
-						to: { x: 0, y: 0 },
-						config: { duration: 200 },
+						to: { x: b.x - parent.x, y: 0 },
+						config: { duration },
 					});
-					continue;
+					// TODO figure out ys
+					// move the item and set state
+					await sleep(duration);
+					moveItem({ itemId: item.id, targetId: idx, parentId });
+					return;
 				}
-				// collision detected
-				console.log("collision");
-				const parent = boardPositions.get(parentId)!;
+				// no collision, get back
 				api.start({
-					to: { x: b.x - parent.x, y: 0 },
+					to: { x: 0, y: 0 },
 					config: { duration: 200 },
 				});
-				// TODO alter state, figure out ys
-				break;
 			}
 		}
 	});
@@ -116,7 +104,7 @@ const Item: FC<{ item: ItemType; parentId: string }> = ({ item, parentId }) => {
 		<animated.div
 			style={style}
 			ref={itemRef}
-			className="w-11/12 bg-blue-600 p-4 text-center"
+			className="w-11/12 touch-none bg-blue-600 p-4 text-center"
 			{...bind()}
 		>
 			{item.data}
