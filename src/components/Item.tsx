@@ -1,7 +1,7 @@
-import { animated, useSpring } from "@react-spring/web";
+import { animated, type SpringRef, useSpring } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { useAtom } from "jotai";
-import { useRef, type FC } from "react";
+import { useEffect, useRef, type FC } from "react";
 import { boardPositions } from "../pages";
 import { moveItemAtom, type ItemType } from "../store";
 import { sleep } from "../utils/sleep";
@@ -33,17 +33,79 @@ const getColliding = ({
 	}
 	return null;
 };
+
+interface ItemPosition {
+	y: number;
+	relY: number;
+	height: number;
+	parentId: string;
+	api: SpringRef<{
+		x: number;
+		y: number;
+	}>;
+}
+const itemsPositions = new Map<string, ItemPosition>();
+
+const resetRelative = (toReset: typeof itemsPositions) => {
+	toReset.forEach((i) => i.api.start({ to: { x: 0, y: 0 } }));
+};
+
 export const Item: FC<{ item: ItemType; parentId: string }> = ({
 	item,
 	parentId,
 }) => {
 	const [, moveItem] = useAtom(moveItemAtom);
-	const [style, api] = useSpring(() => ({ to: { x: 0, y: 0, top: 0 } }));
+	const [style, api] = useSpring(() => ({ to: { x: 0, y: 0 } }));
 	const itemRef = useRef<HTMLDivElement>(null);
 	const bind = useDrag(async (state) => {
 		if (state.down) {
-			const [x, y] = state.movement;
-			api.start({ to: { x, y: y }, config: { duration: 20 } });
+			// map is being copied this way in order to avoid referencing the same value
+			const itemsLocal: typeof itemsPositions = new Map();
+			itemsPositions.forEach((val, key) =>
+				itemsLocal.set(key, { ...val })
+			);
+			api.start({
+				to: { x: state.movement[0], y: state.movement[1] },
+				config: { duration: 20 },
+			});
+			const rect = itemRef.current?.getBoundingClientRect();
+			if (!rect) {
+				resetRelative(itemsPositions);
+				return;
+			}
+			const { x, y, width, height } = rect;
+			const col = getColliding({
+				x,
+				y,
+				height,
+				width,
+			});
+			if (col) {
+				const { collidingId } = col;
+				const parent = boardPositions.get(parentId);
+				const target = boardPositions.get(collidingId);
+				if (!parent || !target) {
+					resetRelative(itemsPositions);
+					return;
+				}
+				for (const i of itemsLocal) {
+					const [itemId, itemValue] = i;
+					if (itemId === item.id) continue;
+					if (collidingId === itemValue.parentId) {
+						/// target stuff
+						if (collidingId && itemValue.y > y) {
+							const fromMap = itemsLocal.get(itemId)!;
+							fromMap.relY += 20 + height;
+							itemsLocal.set(itemId, fromMap);
+						}
+					}
+				}
+				itemsLocal.forEach(
+					(val, key) =>
+						key !== item.id &&
+						val.api.start({ to: { y: val.relY } })
+				);
+			}
 		} else {
 			const rect = itemRef.current?.getBoundingClientRect();
 			if (!rect) return;
@@ -75,14 +137,20 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				// move the item and set state
 				await sleep(duration);
 				moveItem({ itemId: item.id, targetId: collidingId, parentId });
-				return;
 			}
-			// no collision, get back
-			api.start({
-				to: { x: 0, y: 0 },
-				config: { duration: 200 },
-			});
+			resetRelative(itemsPositions);
 		}
+	});
+	useEffect(() => {
+		const rect = itemRef.current?.getBoundingClientRect();
+		if (!rect) return;
+		itemsPositions.set(item.id, {
+			api,
+			y: rect.y,
+			parentId,
+			relY: 0,
+			height: rect.height,
+		});
 	});
 	return (
 		<animated.div
