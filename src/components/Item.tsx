@@ -47,7 +47,9 @@ interface ItemPosition {
 const itemsPositions = new Map<string, ItemPosition>();
 
 const resetRelative = (toReset: typeof itemsPositions) => {
-	toReset.forEach((i) => i.api.start({ to: { x: 0, y: 0 } }));
+	toReset.forEach((i) =>
+		i.api.start({ to: { x: 0, y: 0 }, immediate: true })
+	);
 };
 
 export const Item: FC<{ item: ItemType; parentId: string }> = ({
@@ -56,6 +58,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 }) => {
 	const [, moveItem] = useAtom(moveItemAtom);
 	const [style, api] = useSpring(() => ({ to: { x: 0, y: 0 } }));
+	let ogY: number | null = null; // y before item was dragged
 	const itemRef = useRef<HTMLDivElement>(null);
 	const bind = useDrag(async (state) => {
 		if (state.down) {
@@ -74,6 +77,9 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				return;
 			}
 			const { x, y, width, height } = rect;
+			if (!ogY) {
+				ogY = y;
+			}
 			const col = getColliding({
 				x,
 				y,
@@ -99,6 +105,11 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 							itemsLocal.set(itemId, fromMap);
 						}
 					}
+					if (parentId === itemValue.parentId && itemValue.y > ogY) {
+						const fromMap = itemsLocal.get(itemId)!;
+						fromMap.relY -= 20 + height;
+						itemsLocal.set(itemId, fromMap);
+					}
 				}
 				itemsLocal.forEach(
 					(val, key) =>
@@ -107,6 +118,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				);
 			}
 		} else {
+			ogY = null;
 			const rect = itemRef.current?.getBoundingClientRect();
 			if (!rect) return;
 			const { x, y, width, height } = rect;
