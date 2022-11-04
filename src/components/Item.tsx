@@ -61,12 +61,10 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 	let ogY: number | null = null; // y before item was dragged
 	const itemRef = useRef<HTMLDivElement>(null);
 	const bind = useDrag(async (state) => {
+		// map is being copied this way in order to avoid referencing the same value
+		const itemsLocal: typeof itemsPositions = new Map();
+		itemsPositions.forEach((val, key) => itemsLocal.set(key, { ...val }));
 		if (state.down) {
-			// map is being copied this way in order to avoid referencing the same value
-			const itemsLocal: typeof itemsPositions = new Map();
-			itemsPositions.forEach((val, key) =>
-				itemsLocal.set(key, { ...val })
-			);
 			api.start({
 				to: { x: state.movement[0], y: state.movement[1] },
 				config: { duration: 20 },
@@ -118,7 +116,6 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				);
 			}
 		} else {
-			ogY = null;
 			const rect = itemRef.current?.getBoundingClientRect();
 			if (!rect) return;
 			const { x, y, width, height } = rect;
@@ -132,20 +129,38 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				const { collidingId, colliding } = col;
 				// collision detected
 				console.log("collision");
+				const duration = 300;
 				const parent = boardPositions.get(parentId);
 				if (!parent) {
 					api.start({
 						to: { x: 0, y: 0 },
-						config: { duration: 200 },
+						config: { duration },
 					});
 					return;
 				}
-				const duration = 300;
+				let oldOffset = 0; // old y, relative to the first item in the list
+				let newOffset = 0; // new y, relative to the first item in the new list
+				for (const i of itemsPositions) {
+					const [itemId, itemValue] = i;
+					if (itemId === item.id) continue;
+					if (
+						itemValue.parentId === parentId &&
+						itemValue.y < (ogY ?? -Infinity)
+					) {
+						oldOffset += itemValue.height + 20;
+					}
+					if (
+						itemValue.parentId === collidingId &&
+						itemValue.y <= y
+					) {
+						newOffset += itemValue.height + 20;
+					}
+				}
 				api.start({
-					to: { x: colliding.x - parent.x, y: 0 },
+					to: { x: colliding.x - parent.x, y: newOffset - oldOffset },
 					config: { duration },
 				});
-				// TODO figure out ys
+				ogY = null;
 				// move the item and set state
 				await sleep(duration);
 				moveItem({ itemId: item.id, targetId: collidingId, parentId });
