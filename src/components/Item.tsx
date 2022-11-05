@@ -97,7 +97,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 					if (itemId === item.id) continue;
 					if (collidingId === itemValue.parentId) {
 						/// target stuff
-						if (collidingId && itemValue.y > y) {
+						if (collidingId && itemValue.y >= y) {
 							const fromMap = itemsLocal.get(itemId)!;
 							fromMap.relY += 20 + height;
 							itemsLocal.set(itemId, fromMap);
@@ -140,6 +140,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				}
 				let oldOffset = 0; // old y, relative to the first item in the list
 				let newOffset = 0; // new y, relative to the first item in the new list
+				let newIndex = 0;
 				for (const i of itemsPositions) {
 					const [itemId, itemValue] = i;
 					if (itemId === item.id) continue;
@@ -154,6 +155,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 						itemValue.y <= y
 					) {
 						newOffset += itemValue.height + 20;
+						newIndex++;
 					}
 				}
 				api.start({
@@ -163,7 +165,12 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				ogY = null;
 				// move the item and set state
 				await sleep(duration);
-				moveItem({ itemId: item.id, targetId: collidingId, parentId });
+				moveItem({
+					itemId: item.id,
+					targetId: collidingId,
+					parentId,
+					newIndex,
+				});
 			}
 			resetRelative(itemsPositions);
 		}

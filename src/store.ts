@@ -32,7 +32,13 @@ export const moveItemAtom = atom(
 			itemId,
 			parentId,
 			targetId,
-		}: { itemId: string; parentId: string; targetId: string }
+			newIndex,
+		}: {
+			itemId: string;
+			parentId: string;
+			targetId: string;
+			newIndex: number;
+		}
 	) => {
 		const state = [...get(boardsAtom)];
 		const parentBoard = state.find((b) => b.id === parentId);
@@ -43,7 +49,7 @@ export const moveItemAtom = atom(
 		if (itemIndex < 0 || !parentBoard || !targetBoard) return;
 		const it = parentBoard.items.splice(itemIndex, 1)[0];
 		if (!it) return;
-		targetBoard.items.push(it);
+		targetBoard.items.splice(newIndex, 0, it);
 		set(boardsAtom, state);
 	}
 );
