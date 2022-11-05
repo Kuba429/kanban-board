@@ -6,6 +6,8 @@ import { boardPositions } from "../pages";
 import { moveItemAtom, type ItemType } from "../store";
 import { sleep } from "../utils/sleep";
 
+export const GAP = 20; // this is tied to custom tailwind spacing variable
+
 const getColliding = ({
 	x,
 	y,
@@ -99,13 +101,13 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 						/// target stuff
 						if (collidingId && itemValue.y >= y) {
 							const fromMap = itemsLocal.get(itemId)!;
-							fromMap.relY += 20 + height;
+							fromMap.relY += GAP + height;
 							itemsLocal.set(itemId, fromMap);
 						}
 					}
 					if (parentId === itemValue.parentId && itemValue.y > ogY) {
 						const fromMap = itemsLocal.get(itemId)!;
-						fromMap.relY -= 20 + height;
+						fromMap.relY -= GAP + height;
 						itemsLocal.set(itemId, fromMap);
 					}
 				}
@@ -148,13 +150,13 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 						itemValue.parentId === parentId &&
 						itemValue.y < (ogY ?? -Infinity)
 					) {
-						oldOffset += itemValue.height + 20;
+						oldOffset += itemValue.height + GAP;
 					}
 					if (
 						itemValue.parentId === collidingId &&
 						itemValue.y <= y
 					) {
-						newOffset += itemValue.height + 20;
+						newOffset += itemValue.height + GAP;
 						newIndex++;
 					}
 				}

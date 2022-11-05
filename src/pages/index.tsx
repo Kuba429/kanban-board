@@ -17,7 +17,7 @@ export const boardPositions: Map<
 const BoardContainer = () => {
 	const [boards] = useAtom(boardsAtom);
 	return (
-		<div className="flex h-full w-fit min-w-full items-center justify-center gap-5 bg-blue-300">
+		<div className="flex h-full w-fit min-w-full items-center justify-center gap-gap bg-blue-300">
 			{boards.map((x) => (
 				<Board key={x.id} board={x} />
 			))}
@@ -36,7 +36,7 @@ const Board: FC<{ board: BoardType }> = ({ board }) => {
 		<div className="h-4/5 w-52 bg-blue-800 text-white">
 			<h2 className="text-center text-xl">{board.name}</h2>
 			<div
-				className="flex h-full w-full flex-col items-center gap-5 bg-blue-400 py-5"
+				className="flex h-full w-full flex-col items-center gap-gap bg-blue-400 py-gap"
 				ref={boardRef}
 			>
 				{board.items.map((x) => (
