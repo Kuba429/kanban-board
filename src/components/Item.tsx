@@ -1,6 +1,7 @@
 import { animated, type SpringRef, useSpring } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { useAtom } from "jotai";
+import { MdDragIndicator } from "react-icons/md";
 import { useEffect, useRef, type FC } from "react";
 import { boardPositions } from "../pages";
 import { moveItemAtom, type ItemType } from "../store";
@@ -192,10 +193,15 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 		<animated.div
 			style={style}
 			ref={itemRef}
-			className="w-11/12 touch-none bg-blue-600 p-4 text-center"
-			{...bind()}
+			className="flex w-11/12 touch-none items-center justify-between bg-blue-600 p-4"
 		>
 			{item.data}
+			<div
+				{...bind()}
+				className="height-fit rounded p-1 transition-all hover:bg-gray-800/25"
+			>
+				<MdDragIndicator />
+			</div>
 		</animated.div>
 	);
 };
