@@ -7,4 +7,11 @@ body,
 :root,
 #__next {
 	height: 100%;
+	user-select: none;
+}
+
+@layer components {
+	.drag-handle {
+		@apply cursor-move rounded p-1 transition-all hover:bg-black-100/10;
+	}
 }

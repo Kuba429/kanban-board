@@ -193,13 +193,10 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 		<animated.div
 			style={style}
 			ref={itemRef}
-			className="flex w-11/12 touch-none items-center justify-between bg-blue-600 p-4"
+			className="flex w-11/12 touch-none items-center justify-between rounded-md border border-white/25 bg-black-800 p-4 transition-colors hover:border-white"
 		>
-			{item.data}
-			<div
-				{...bind()}
-				className="height-fit rounded p-1 transition-all hover:bg-gray-800/25"
-			>
+			<span>{item.data}</span>
+			<div {...bind()} className="drag-handle">
 				<MdDragIndicator />
 			</div>
 		</animated.div>

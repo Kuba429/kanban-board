@@ -3,6 +3,7 @@ import { type NextPage } from "next";
 import { type FC, useEffect, useRef } from "react";
 import { boardsAtom, type BoardType } from "../store";
 import { Item } from "../components/Item";
+import { MdDragIndicator } from "react-icons/md";
 
 const Home: NextPage = () => {
 	return <BoardContainer />;
@@ -17,7 +18,7 @@ export const boardPositions: Map<
 const BoardContainer = () => {
 	const [boards] = useAtom(boardsAtom);
 	return (
-		<div className="flex h-full w-fit min-w-full items-center justify-center gap-gap bg-blue-300">
+		<div className="flex h-full w-fit min-w-full select-none items-center justify-center gap-gap bg-black-800">
 			{boards.map((x) => (
 				<Board key={x.id} board={x} />
 			))}
@@ -33,10 +34,18 @@ const Board: FC<{ board: BoardType }> = ({ board }) => {
 		boardPositions.set(board.id, { x, y, width, height });
 	}, [board.id]);
 	return (
-		<div className="h-4/5 w-52 bg-blue-800 text-white">
-			<h2 className="text-center text-xl">{board.name}</h2>
+		<div className="flex h-4/5 w-72 flex-col rounded-xl border border-white/25 bg-black-800 text-white">
+			<div className="flex items-center justify-between p-3">
+				<h2 className="text-xl">{board.name}</h2>
+				<div className="drag-handle">
+					{
+						// TODO make boards sortable too
+					}
+					<MdDragIndicator />
+				</div>
+			</div>
 			<div
-				className="flex h-full w-full flex-col items-center gap-gap bg-blue-400 py-gap"
+				className="flex w-full basis-[100%] flex-col items-center gap-gap rounded-b-xl bg-black-900 py-gap"
 				ref={boardRef}
 			>
 				{board.items.map((x) => (
