@@ -1,12 +1,19 @@
 import { useAtom } from "jotai";
 import { type NextPage } from "next";
 import { type FC, useEffect, useRef } from "react";
-import { boardsAtom, type BoardType } from "../store";
-import { Item } from "../components/Item";
+import { boardsAtom, type BoardType } from "../stores/boards";
+import { Item, ItemModal } from "../components/Item";
 import { MdDragIndicator } from "react-icons/md";
+import { modalAtom } from "../stores/modal";
 
 const Home: NextPage = () => {
-	return <BoardContainer />;
+	const [itemModal] = useAtom(modalAtom);
+	return (
+		<>
+			<BoardContainer />
+			{itemModal && <ItemModal modalState={itemModal} />}
+		</>
+	);
 };
 
 export default Home;
@@ -18,7 +25,7 @@ export const boardPositions: Map<
 const BoardContainer = () => {
 	const [boards] = useAtom(boardsAtom);
 	return (
-		<div className="flex h-full w-fit min-w-full select-none items-center justify-center gap-gap bg-black-800">
+		<div className="flex h-full w-fit min-w-full select-none items-center justify-center gap-gap overflow-scroll bg-black-800">
 			{boards.map((x) => (
 				<Board key={x.id} board={x} />
 			))}
