@@ -226,7 +226,7 @@ export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 	const fullVW = document.documentElement.clientWidth;
 	const fullVH = document.documentElement.clientHeight;
 	const margin = { x: fullVW / 20, y: fullVH / 8 };
-	const duration = 300;
+	const duration = 250;
 	const [style, api] = useSpring(() => ({
 		from,
 		to: {
@@ -259,7 +259,8 @@ export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 	return (
 		<>
 			<div
-				className={`fixed left-0 top-0 h-full w-full backdrop-blur duration-[${duration}ms] transition-opacity ${bgOpacity}`}
+				className={`fixed left-0 top-0 h-full w-full backdrop-blur transition-opacity ${bgOpacity}`}
+				style={{ transitionDuration: duration + "ms" }}
 				onClick={hideModal}
 			></div>
 			<animated.div
@@ -267,7 +268,8 @@ export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 				className="[grid-template-rows: auto auto auto] fixed m-auto grid overflow-hidden rounded border border-white/25 bg-black-800 px-12 text-white"
 			>
 				<div
-					className={`${opacity} overflow-scroll duration-[${duration}ms]`}
+					className={`${opacity} overflow-scroll`}
+					style={{ transitionDuration: duration + "ms" }}
 				>
 					<h1 className="py-5 text-center text-xl">
 						{itemData.data}
@@ -278,7 +280,8 @@ export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 					</pre>
 				</div>
 				<div
-					className={`${opacity} grid w-full grid-cols-2 gap-5 py-5 duration-[${duration}ms] self-end`}
+					className={`${opacity} grid w-full grid-cols-2 gap-5 self-end py-5`}
+					style={{ transitionDuration: duration + "ms" }}
 				>
 					<button
 						onClick={hideModal}
