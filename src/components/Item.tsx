@@ -202,7 +202,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 			<animated.div
 				style={style}
 				ref={itemRef}
-				className="flex w-11/12 touch-none items-center justify-between rounded-md border border-white/25 bg-black-800 p-4 transition-colors hover:border-white"
+				className="flex w-11/12 items-center justify-between rounded-md border border-white/25 bg-black-800 p-4 transition-colors hover:border-white"
 			>
 				<span onClick={showModal}>{item.data}</span>
 				<div {...bind()} className="drag-handle">
