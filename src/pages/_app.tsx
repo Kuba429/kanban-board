@@ -1,15 +1,22 @@
 import { type AppType } from "next/app";
+import { SessionProvider } from "next-auth/react";
 
 import { trpc } from "../utils/trpc";
 import { Provider } from "jotai";
 
 import "../styles/globals.css";
+import { type Session } from "next-auth";
 
-const MyApp: AppType = ({ Component, pageProps }) => {
+const MyApp: AppType<{ session: Session | null }> = ({
+	Component,
+	pageProps: { session, ...pageProps },
+}) => {
 	return (
-		<Provider>
-			<Component {...pageProps} />
-		</Provider>
+		<SessionProvider session={session}>
+			<Provider>
+				<Component {...pageProps} />
+			</Provider>
+		</SessionProvider>
 	);
 };
 
