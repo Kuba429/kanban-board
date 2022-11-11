@@ -9,7 +9,7 @@ const Drawer = () => {
 	const [style, api] = useSpring(() => ({ from: { x: x() } }));
 	useEffect(() => {
 		api.start({ to: { x: x() } });
-	}, [status, api]);
+	}, [status, api, x]);
 	return (
 		<>
 			<div className="border-b border-white/25 bg-black-800 p-3 text-white">

@@ -5,16 +5,15 @@ import { boardsAtom, type BoardType } from "../stores/boards";
 import { Item, ItemModal } from "../components/Item";
 import { MdDragIndicator } from "react-icons/md";
 import { modalAtom } from "../stores/modal";
-import Drawer from "../components/Drawer";
+import Layout from "../components/Layout";
 
 const Home: NextPage = () => {
 	const [itemModal] = useAtom(modalAtom);
 	return (
-		<div className="flex h-full flex-col">
-			<Drawer />
+		<Layout>
 			<BoardContainer />
 			{itemModal && <ItemModal modalState={itemModal} />}
-		</div>
+		</Layout>
 	);
 };
 
