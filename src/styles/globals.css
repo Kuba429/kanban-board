@@ -12,6 +12,6 @@ body,
 
 @layer components {
 	.drag-handle {
-		@apply aspect-square cursor-move rounded p-1 transition-all hover:bg-black-100/10;
+		@apply aspect-square cursor-move touch-none rounded p-1 transition-all hover:bg-black-100/10;
 	}
 }
