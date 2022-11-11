@@ -2,16 +2,43 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
-model Example {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Board {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    createdBy String
+    title     String   @default("Untitled")
+    users     String[]
+    columns   Column[]
+}
+
+model Column {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    title     String   @default("Untitled")
+    Board     Board?   @relation(fields: [boardId], references: [id])
+    boardId   String?
+    items     Item[]
+}
+
+model Item {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    updatedBy DateTime @updatedAt
+    createdBy String
+    title     String   @default("Untitled")
+    content   String?
+    index     Int
+    Column    Column?  @relation(fields: [columnId], references: [id])
+    columnId  String?
 }

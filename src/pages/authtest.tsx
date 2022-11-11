@@ -1,18 +1,26 @@
 import { signIn, signOut, useSession } from "next-auth/react";
+import { trpc } from "../utils/trpc";
 
 const AuthTest = () => {
 	const { data: session } = useSession();
-	if (!session) {
+	const query = trpc.main.getBoards.useQuery(undefined, {
+		enabled: session?.user ? true : false, // can't just cast it as bool for whatever reason
+	});
+	if (session) {
 		return (
 			<div>
-				<button onClick={() => signIn()}>sign in</button>
+				{query.status === "success" && (
+					<pre className="w-screen whitespace-pre-wrap">
+						{JSON.stringify(query.data)}
+					</pre>
+				)}
+				<button onClick={() => signOut()}>Sign out</button>
 			</div>
 		);
 	}
 	return (
 		<div>
-			<h1>{session.user?.name}</h1>
-			<button onClick={() => signOut()}>Sign out</button>
+			<button onClick={() => signIn()}>sign in</button>
 		</div>
 	);
 };
