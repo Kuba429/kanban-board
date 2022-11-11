@@ -5,12 +5,12 @@ export interface ItemType {
 	data: string;
 	id: string;
 }
-export interface BoardType {
+export interface ColumnType {
 	name: string;
 	id: string;
 	items: ItemType[];
 }
-export const boardsAtom = atom<BoardType[]>([
+export const columnsAtom = atom<ColumnType[]>([
 	{
 		name: "a",
 		id: v4(),
@@ -40,16 +40,16 @@ export const moveItemAtom = atom(
 			newIndex: number;
 		}
 	) => {
-		const state = [...get(boardsAtom)];
-		const parentBoard = state.find((b) => b.id === parentId);
-		const targetBoard = state.find((b) => b.id === targetId);
+		const state = [...get(columnsAtom)];
+		const parentColumn = state.find((b) => b.id === parentId);
+		const targetColumn = state.find((b) => b.id === targetId);
 
 		const itemIndex =
-			parentBoard?.items.findIndex((i) => i.id === itemId) ?? -1;
-		if (itemIndex < 0 || !parentBoard || !targetBoard) return;
-		const it = parentBoard.items.splice(itemIndex, 1)[0];
+			parentColumn?.items.findIndex((i) => i.id === itemId) ?? -1;
+		if (itemIndex < 0 || !parentColumn || !targetColumn) return;
+		const it = parentColumn.items.splice(itemIndex, 1)[0];
 		if (!it) return;
-		targetBoard.items.splice(newIndex, 0, it);
-		set(boardsAtom, state);
+		targetColumn.items.splice(newIndex, 0, it);
+		set(columnsAtom, state);
 	}
 );

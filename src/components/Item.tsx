@@ -3,8 +3,8 @@ import { useDrag } from "@use-gesture/react";
 import { useAtom } from "jotai";
 import { MdDragIndicator } from "react-icons/md";
 import { useEffect, useRef, useState, type FC } from "react";
-import { boardPositions } from "../pages";
-import { moveItemAtom, type ItemType } from "../stores/boards";
+import { columnPositions } from "../pages";
+import { moveItemAtom, type ItemType } from "../stores/columns";
 import { sleep } from "../utils/sleep";
 import { modalAtom, type ModalAtomType } from "../stores/modal";
 
@@ -21,11 +21,11 @@ const getColliding = ({
 	y: number;
 	height: number;
 }) => {
-	let centerX = x; // only check if center of dragged item collided with a board
+	let centerX = x; // only check if center of dragged item collided with a column
 	const centerWidth = 20;
 	centerX += width / 2 - centerWidth / 2;
 
-	for (const i of boardPositions) {
+	for (const i of columnPositions) {
 		const [idx, b] = i;
 		if (
 			centerX < b.x + b.width &&
@@ -90,8 +90,8 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 			});
 			if (col) {
 				const { collidingId } = col;
-				const parent = boardPositions.get(parentId);
-				const target = boardPositions.get(collidingId);
+				const parent = columnPositions.get(parentId);
+				const target = columnPositions.get(collidingId);
 				if (!parent || !target) {
 					resetRelative(itemsPositions);
 					return;
@@ -134,7 +134,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				// collision detected
 				console.log("collision");
 				const duration = 300;
-				const parent = boardPositions.get(parentId);
+				const parent = columnPositions.get(parentId);
 				if (!parent) {
 					api.start({
 						to: { x: 0, y: 0 },

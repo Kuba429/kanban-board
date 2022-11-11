@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { type ItemType } from "../stores/boards";
+import { type ItemType } from "../stores/columns";
 
 export interface ModalAtomType {
 	itemRect: DOMRect;
