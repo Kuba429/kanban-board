@@ -1,5 +1,6 @@
 import { animated, useSpring } from "@react-spring/web";
 import { atom, useAtom } from "jotai";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { IoMdMenu } from "react-icons/io";
 
@@ -22,9 +23,9 @@ const Drawer = () => {
 			</div>
 			<animated.div
 				style={style}
-				className="fixed z-20 h-full w-52 border-r border-white/25 bg-black-800 text-white"
+				className="fixed z-20 flex h-full w-1/3 min-w-fit flex-col border-r border-white/25 bg-black-800 p-5 text-white"
 			>
-				drawer
+				<DrawerContent />
 			</animated.div>
 			{status && (
 				<div
@@ -39,3 +40,26 @@ const Drawer = () => {
 export default Drawer;
 
 const drawerStatusAtom = atom(false);
+
+const DrawerContent = () => {
+	const { data: session } = useSession();
+	return (
+		<>
+			{!session ? (
+				<button
+					onClick={() => signIn()}
+					className="btn-contrast mt-auto w-full p-2"
+				>
+					sign in
+				</button>
+			) : (
+				<button
+					onClick={() => signOut()}
+					className="btn mt-auto w-full p-2"
+				>
+					sign out
+				</button>
+			)}
+		</>
+	);
+};

@@ -192,7 +192,6 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 	});
 	const [, setModalState] = useAtom(modalAtom);
 	const showModal = () => {
-		console.log("asd");
 		const rect = itemRef.current?.getBoundingClientRect();
 		if (!rect) return;
 		setModalState({ itemRect: rect, itemData: item });
@@ -283,15 +282,10 @@ export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 					className={`${opacity} grid w-full grid-cols-2 gap-5 self-end py-5`}
 					style={{ transitionDuration: duration + "ms" }}
 				>
-					<button
-						onClick={hideModal}
-						className="w-full rounded border border-white/25 bg-black-900 p-4 hover:border-white"
-					>
+					<button onClick={hideModal} className="btn w-full">
 						Cancel
 					</button>
-					<button className="w-full rounded border bg-white p-4 text-black-900 hover:border-black-900">
-						Confirm
-					</button>
+					<button className="btn-contrast w-full">Confirm</button>
 				</div>
 			</animated.div>
 		</>
