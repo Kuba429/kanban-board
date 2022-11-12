@@ -3,7 +3,7 @@ import { useDrag } from "@use-gesture/react";
 import { useAtom } from "jotai";
 import { MdDragIndicator } from "react-icons/md";
 import { useEffect, useRef, useState, type FC } from "react";
-import { columnPositions } from "../pages";
+import { columnPositions } from "../pages/board/[id]";
 import { moveItemAtom, type ItemType } from "../stores/columns";
 import { sleep } from "../utils/sleep";
 import { modalAtom, type ModalAtomType } from "../stores/modal";

@@ -1,65 +1,44 @@
-import { useAtom } from "jotai";
-import { type NextPage } from "next";
-import { type FC, useEffect, useRef } from "react";
-import { columnsAtom, type ColumnType as ColumnType } from "../stores/columns";
-import { Item, ItemModal } from "../components/Item";
-import { MdDragIndicator } from "react-icons/md";
-import { modalAtom } from "../stores/modal";
+import { useSession } from "next-auth/react";
+import { FC } from "react";
 import Layout from "../components/Layout";
-
-const Home: NextPage = () => {
-	const [itemModal] = useAtom(modalAtom);
+import { boards } from "../server/trpc/router/_app";
+import { trpc } from "../utils/trpc";
+const Home = () => {
+	const { data: session } = useSession();
+	const query = trpc.main.getBoards.useQuery(undefined, {
+		enabled: session?.user ? true : false,
+	});
+	if (!session)
+		return (
+			<Layout>
+				<h1>log in</h1>
+			</Layout>
+		);
+	if (query.status === "loading")
+		return (
+			<Layout>
+				<h1>loading...</h1>
+			</Layout>
+		);
+	if (query.status === "error")
+		return (
+			<Layout>
+				<h1>error</h1>
+			</Layout>
+		);
 	return (
 		<Layout>
-			<Board />
-			{itemModal && <ItemModal modalState={itemModal} />}
+			<div className="flex gap-5 p-5">
+				{query.data.map((x) => (
+					<Board board={x} key={x.id} />
+				))}
+			</div>
 		</Layout>
 	);
 };
 
 export default Home;
-// store positions of all columns to figure out which one is the closest to dragged element
-export const columnPositions: Map<
-	string,
-	{ x: number; y: number; width: number; height: number }
-> = new Map();
-const Board = () => {
-	const [columns] = useAtom(columnsAtom);
-	return (
-		<div className="flex h-full w-fit min-w-full select-none items-center justify-center gap-gap overflow-scroll bg-black-800">
-			{columns.map((x) => (
-				<Column key={x.id} column={x} />
-			))}
-		</div>
-	);
-};
-const Column: FC<{ column: ColumnType }> = ({ column }) => {
-	const columnRef = useRef<HTMLDivElement>(null);
-	useEffect(() => {
-		const rect = columnRef.current?.getBoundingClientRect();
-		if (!rect) return;
-		const { x, y, width, height } = rect;
-		columnPositions.set(column.id, { x, y, width, height });
-	}, [column.id]);
-	return (
-		<div className="flex h-4/5 w-72 flex-col rounded-xl border border-white/25 bg-black-800 text-white">
-			<div className="flex items-center justify-between p-3">
-				<h2 className="text-xl">{column.name}</h2>
-				<div className="drag-handle">
-					{
-						// TODO make columns sortable too
-					}
-					<MdDragIndicator />
-				</div>
-			</div>
-			<div
-				className="flex w-full basis-[100%] flex-col items-center gap-gap rounded-b-xl bg-black-900 py-gap"
-				ref={columnRef}
-			>
-				{column.items.map((x) => (
-					<Item key={x.id} item={x} parentId={column.id} />
-				))}
-			</div>
-		</div>
-	);
+
+const Board: FC<{ board: boards[number] }> = ({ board }) => {
+	return <h1>{board.title}</h1>;
 };

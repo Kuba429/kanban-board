@@ -1,4 +1,5 @@
 import { router } from "../trpc";
+import type { GetInferenceHelpers } from "@trpc/server";
 import { mainRouter } from "./main";
 
 export const appRouter = router({
@@ -7,3 +8,6 @@ export const appRouter = router({
 
 // export type definition of API
 export type AppRouter = typeof appRouter;
+
+export type boards =
+	GetInferenceHelpers<AppRouter>["main"]["getBoards"]["output"];
