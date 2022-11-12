@@ -3,6 +3,7 @@ import { FC } from "react";
 import Layout from "../components/Layout";
 import { boards } from "../server/trpc/router/_app";
 import { trpc } from "../utils/trpc";
+
 const Home = () => {
 	const { data: session } = useSession();
 	const query = trpc.main.getBoards.useQuery(undefined, {
@@ -28,7 +29,7 @@ const Home = () => {
 		);
 	return (
 		<Layout>
-			<div className="flex gap-5 p-5">
+			<div className="grid grid-cols-5 gap-5 p-5">
 				{query.data.map((x) => (
 					<Board board={x} key={x.id} />
 				))}
@@ -40,5 +41,12 @@ const Home = () => {
 export default Home;
 
 const Board: FC<{ board: boards[number] }> = ({ board }) => {
-	return <h1>{board.title}</h1>;
+	return (
+		<a
+			href={`/board/${board.id}`}
+			className="h-24 rounded bg-black-700 p-5"
+		>
+			{board.title}
+		</a>
+	);
 };

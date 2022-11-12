@@ -1,10 +1,7 @@
 import { useAtom } from "jotai";
 import { type NextPage } from "next";
 import { type FC, useEffect, useRef } from "react";
-import {
-	columnsAtom,
-	type ColumnType as ColumnType,
-} from "../../stores/columns";
+import { columnsAtom, type ColumnType } from "../../stores/columns";
 import { Item, ItemModal } from "../../components/Item";
 import { MdDragIndicator } from "react-icons/md";
 import { modalAtom } from "../../stores/modal";
