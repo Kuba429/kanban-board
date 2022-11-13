@@ -1,3 +1,4 @@
+import { disconnect } from "process";
 import { z } from "zod";
 
 import { router, publicProcedure } from "../trpc";
@@ -43,5 +44,27 @@ export const mainRouter = router({
 					users: true,
 				},
 			});
+		}),
+	moveItem: publicProcedure
+		.input(
+			z.object({
+				itemId: z.string(),
+				newColumnId: z.string(),
+				oldColumnId: z.string(),
+			})
+		)
+		.mutation(({ ctx, input }) => {
+			// TODO update indexes
+			ctx.prisma.$transaction([
+				ctx.prisma.column.update({
+					where: { id: input.oldColumnId },
+					data: { items: { disconnect: { id: input.itemId } } },
+				}),
+				ctx.prisma.column.update({
+					where: { id: input.newColumnId },
+					data: { items: { connect: { id: input.itemId } } },
+				}),
+			]);
+			return;
 		}),
 });

@@ -8,6 +8,7 @@ import { moveItemAtom } from "../stores/columns";
 import { sleep } from "../utils/sleep";
 import { modalAtom, type ModalAtomType } from "../stores/modal";
 import { type Item as ItemType } from "@prisma/client";
+import { trpc } from "../utils/trpc";
 
 export const GAP = 20; // this is tied to custom tailwind spacing variable
 
@@ -62,6 +63,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 	parentId,
 }) => {
 	const [, moveItem] = useAtom(moveItemAtom);
+	const mutation = trpc.main.moveItem.useMutation();
 	const [style, api] = useSpring(() => ({ to: { x: 0, y: 0 } }));
 	let ogY: number | null = null; // y before item was dragged
 	const itemRef = useRef<HTMLDivElement>(null);
@@ -169,6 +171,11 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				});
 				ogY = null;
 				// move the item and set state
+				mutation.mutate({
+					newColumnId: collidingId,
+					oldColumnId: parentId,
+					itemId: item.id,
+				});
 				await sleep(duration);
 				moveItem({
 					itemId: item.id,
