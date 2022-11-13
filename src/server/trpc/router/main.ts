@@ -25,4 +25,23 @@ export const mainRouter = router({
 			},
 		});
 	}),
+	getBoard: publicProcedure
+		.input(z.object({ boardId: z.string() }))
+		.query(({ ctx, input }) => {
+			const email = ctx.session?.user?.email as string;
+			return ctx.prisma.board.findFirst({
+				where: {
+					id: { equals: input.boardId },
+					OR: [
+						{ users: { hasSome: email } },
+						{ createdBy: { equals: email } },
+					],
+				},
+				select: {
+					title: true,
+					columns: { include: { items: true } },
+					users: true,
+				},
+			});
+		}),
 });

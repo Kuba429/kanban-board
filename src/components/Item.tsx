@@ -4,9 +4,10 @@ import { useAtom } from "jotai";
 import { MdDragIndicator } from "react-icons/md";
 import { useEffect, useRef, useState, type FC } from "react";
 import { columnPositions } from "../pages/board/[id]";
-import { moveItemAtom, type ItemType } from "../stores/columns";
+import { moveItemAtom } from "../stores/columns";
 import { sleep } from "../utils/sleep";
 import { modalAtom, type ModalAtomType } from "../stores/modal";
+import { type Item as ItemType } from "@prisma/client";
 
 export const GAP = 20; // this is tied to custom tailwind spacing variable
 
@@ -203,7 +204,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				ref={itemRef}
 				className="flex w-11/12 items-center justify-between rounded-md border border-white/25 bg-black-800 p-4 transition-colors hover:border-white"
 			>
-				<span onClick={showModal}>{item.data}</span>
+				<span onClick={showModal}>{item.title}</span>
 				<div {...bind()} className="drag-handle">
 					<MdDragIndicator />
 				</div>
@@ -271,7 +272,7 @@ export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 					style={{ transitionDuration: duration + "ms" }}
 				>
 					<h1 className="py-5 text-center text-xl">
-						{itemData.data}
+						{itemData.title}
 					</h1>
 					<pre className={`whitespace-pre-wrap transition-opacity`}>
 						Lorem, ipsum dolor sit amet consectetur adipisicing

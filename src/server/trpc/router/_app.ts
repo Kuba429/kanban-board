@@ -11,3 +11,5 @@ export type AppRouter = typeof appRouter;
 
 export type boards =
 	GetInferenceHelpers<AppRouter>["main"]["getBoards"]["output"];
+export type board =
+	GetInferenceHelpers<AppRouter>["main"]["getBoard"]["output"];

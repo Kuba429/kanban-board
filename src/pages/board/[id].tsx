@@ -1,29 +1,39 @@
 import { useAtom } from "jotai";
 import { type NextPage } from "next";
 import { type FC, useEffect, useRef } from "react";
-import { columnsAtom, type ColumnType } from "../../stores/columns";
+import { Column, columnsAtom } from "../../stores/columns";
 import { Item, ItemModal } from "../../components/Item";
 import { MdDragIndicator } from "react-icons/md";
 import { modalAtom } from "../../stores/modal";
 import Layout from "../../components/Layout";
+import { useRouter } from "next/router";
+import { trpc } from "../../utils/trpc";
 
-const Home: NextPage = () => {
+const Board: NextPage = () => {
+	const { id } = useRouter().query;
+	const [, setColumns] = useAtom(columnsAtom);
+	const query = trpc.main.getBoard.useQuery({
+		boardId: id?.toString() ?? "",
+	});
+	useEffect(() => {
+		query.data && setColumns(query.data.columns);
+	}, [query]);
 	const [itemModal] = useAtom(modalAtom);
 	return (
 		<Layout>
-			<Board />
+			<Columns />
 			{itemModal && <ItemModal modalState={itemModal} />}
 		</Layout>
 	);
 };
 
-export default Home;
+export default Board;
 // store positions of all columns to figure out which one is the closest to dragged element
 export const columnPositions: Map<
 	string,
 	{ x: number; y: number; width: number; height: number }
 > = new Map();
-const Board = () => {
+const Columns = () => {
 	const [columns] = useAtom(columnsAtom);
 	return (
 		<div className="flex h-full w-fit min-w-full select-none items-center justify-center gap-gap overflow-scroll">
@@ -33,7 +43,7 @@ const Board = () => {
 		</div>
 	);
 };
-const Column: FC<{ column: ColumnType }> = ({ column }) => {
+const Column: FC<{ column: Column }> = ({ column }) => {
 	const columnRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
 		const rect = columnRef.current?.getBoundingClientRect();
@@ -44,7 +54,7 @@ const Column: FC<{ column: ColumnType }> = ({ column }) => {
 	return (
 		<div className="flex h-4/5 w-72 flex-col rounded-xl border border-white/25 bg-black-800 text-white">
 			<div className="flex items-center justify-between p-3">
-				<h2 className="text-xl">{column.name}</h2>
+				<h2 className="text-xl">{column.title}</h2>
 				<div className="drag-handle">
 					{
 						// TODO make columns sortable too
