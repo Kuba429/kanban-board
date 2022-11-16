@@ -1,4 +1,3 @@
-import { disconnect } from "process";
 import { z } from "zod";
 
 import { router, publicProcedure } from "../trpc";
@@ -40,7 +39,9 @@ export const mainRouter = router({
 				},
 				select: {
 					title: true,
-					columns: { include: { items: true } },
+					columns: {
+						include: { items: { orderBy: { index: "asc" } } },
+					},
 					users: true,
 				},
 			});
@@ -51,6 +52,18 @@ export const mainRouter = router({
 				itemId: z.string(),
 				newColumnId: z.string(),
 				oldColumnId: z.string(),
+				indexesOldColumn: z.array(
+					z.object({
+						id: z.string(),
+						index: z.number(),
+					})
+				),
+				indexesNewColumn: z.array(
+					z.object({
+						id: z.string(),
+						index: z.number(),
+					})
+				),
 			})
 		)
 		.mutation(({ ctx, input }) => {

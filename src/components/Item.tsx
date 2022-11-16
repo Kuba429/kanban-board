@@ -148,6 +148,12 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				let oldOffset = 0; // old y, relative to the first item in the list
 				let newOffset = 0; // new y, relative to the first item in the new list
 				let newIndex = 0;
+
+				// used to get indexes of all items after item was moved
+				const itemsInOldColumn: string[] = [];
+				const itemsInNewColumn: string[] = [];
+				//const itemsInNewColumn = []
+				console.log(itemsInOldColumn);
 				for (const i of itemsPositions) {
 					const [itemId, itemValue] = i;
 					if (itemId === item.id) continue;
@@ -164,6 +170,12 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 						newOffset += itemValue.height + GAP;
 						newIndex++;
 					}
+					// indexes of items from old and new columns
+					if (itemValue.parentId === parentId) {
+						itemsInOldColumn.push(itemId);
+					} else if (itemValue.parentId === collidingId) {
+						itemsInNewColumn.push(itemId);
+					}
 				}
 				api.start({
 					to: { x: colliding.x - parent.x, y: newOffset - oldOffset },
@@ -175,6 +187,14 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 					newColumnId: collidingId,
 					oldColumnId: parentId,
 					itemId: item.id,
+					indexesOldColumn: itemsInOldColumn.map((i, idx) => ({
+						id: i,
+						index: idx,
+					})),
+					indexesNewColumn: itemsInOldColumn.map((i, idx) => ({
+						id: i,
+						index: idx,
+					})),
 				});
 				await sleep(duration);
 				moveItem({

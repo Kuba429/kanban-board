@@ -38,7 +38,7 @@ model Item {
     createdBy String
     title     String   @default("Untitled")
     content   String?
-    index     Int
+    index     Int      @default(0)
     Column    Column?  @relation(fields: [columnId], references: [id])
     columnId  String?
 }
