@@ -26,9 +26,10 @@ export const moveItemAtom = atom(
 			newIndex: number;
 		}
 	) => {
-		const state = [...get(columnsAtom)];
-		const parentColumn = state.find((b) => b.id === parentId);
-		const targetColumn = state.find((b) => b.id === targetId);
+		const state = get(columnsAtom);
+		const newColumns = [...state];
+		const parentColumn = newColumns.find((b) => b.id === parentId);
+		const targetColumn = newColumns.find((b) => b.id === targetId);
 
 		const itemIndex =
 			parentColumn?.items.findIndex((i) => i.id === itemId) ?? -1;
@@ -36,6 +37,6 @@ export const moveItemAtom = atom(
 		const it = parentColumn.items.splice(itemIndex, 1)[0];
 		if (!it) return;
 		targetColumn.items.splice(newIndex, 0, it);
-		set(columnsAtom, state);
+		set(columnsAtom, newColumns);
 	}
 );

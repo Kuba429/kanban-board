@@ -4,7 +4,7 @@ import { useAtom } from "jotai";
 import { MdDragIndicator } from "react-icons/md";
 import { useEffect, useRef, useState, type FC } from "react";
 import { columnPositions } from "../pages/board/[id]";
-import { moveItemAtom } from "../stores/columns";
+import { Column, columnsAtom, moveItemAtom } from "../stores/columns";
 import { sleep } from "../utils/sleep";
 import { modalAtom, type ModalAtomType } from "../stores/modal";
 import { type Item as ItemType } from "@prisma/client";
@@ -63,6 +63,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 	parentId,
 }) => {
 	const [, moveItem] = useAtom(moveItemAtom);
+	const [columns] = useAtom(columnsAtom); // used to get new indexes of all items
 	const mutation = trpc.main.moveItem.useMutation();
 	const [style, api] = useSpring(() => ({ to: { x: 0, y: 0 } }));
 	let ogY: number | null = null; // y before item was dragged
@@ -134,8 +135,6 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 			});
 			if (col) {
 				const { collidingId, colliding } = col;
-				// collision detected
-				console.log("collision");
 				const duration = 300;
 				const parent = columnPositions.get(parentId);
 				if (!parent) {
@@ -149,11 +148,6 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				let newOffset = 0; // new y, relative to the first item in the new list
 				let newIndex = 0;
 
-				// used to get indexes of all items after item was moved
-				const itemsInOldColumn: string[] = [];
-				const itemsInNewColumn: string[] = [];
-				//const itemsInNewColumn = []
-				console.log(itemsInOldColumn);
 				for (const i of itemsPositions) {
 					const [itemId, itemValue] = i;
 					if (itemId === item.id) continue;
@@ -170,38 +164,28 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 						newOffset += itemValue.height + GAP;
 						newIndex++;
 					}
-					// indexes of items from old and new columns
-					if (itemValue.parentId === parentId) {
-						itemsInOldColumn.push(itemId);
-					} else if (itemValue.parentId === collidingId) {
-						itemsInNewColumn.push(itemId);
-					}
 				}
 				api.start({
 					to: { x: colliding.x - parent.x, y: newOffset - oldOffset },
 					config: { duration },
 				});
 				ogY = null;
-				// move the item and set state
-				mutation.mutate({
-					newColumnId: collidingId,
-					oldColumnId: parentId,
-					itemId: item.id,
-					indexesOldColumn: itemsInOldColumn.map((i, idx) => ({
-						id: i,
-						index: idx,
-					})),
-					indexesNewColumn: itemsInOldColumn.map((i, idx) => ({
-						id: i,
-						index: idx,
-					})),
-				});
 				await sleep(duration);
 				moveItem({
 					itemId: item.id,
 					targetId: collidingId,
 					parentId,
 					newIndex,
+				});
+				const newIndexes = getNewItemIndexes(columns, [
+					parentId,
+					collidingId,
+				]);
+				mutation.mutate({
+					newColumnId: collidingId,
+					oldColumnId: parentId,
+					itemId: item.id,
+					newIndexes,
 				});
 			}
 			resetRelative(itemsPositions);
@@ -238,6 +222,19 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 			</animated.div>
 		</>
 	);
+};
+
+const getNewItemIndexes = (columns: Column[], ids: string[]) => {
+	type newIndexes = { id: string; index: number }[];
+	const newIndexes: newIndexes = [];
+	columns.forEach((col) => {
+		if (ids.includes(col.id)) {
+			col.items.forEach((i, index) => {
+				newIndexes.push({ id: i.id, index });
+			});
+		}
+	});
+	return newIndexes;
 };
 export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 	modalState,

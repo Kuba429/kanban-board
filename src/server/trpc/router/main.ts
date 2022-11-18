@@ -52,13 +52,7 @@ export const mainRouter = router({
 				itemId: z.string(),
 				newColumnId: z.string(),
 				oldColumnId: z.string(),
-				indexesOldColumn: z.array(
-					z.object({
-						id: z.string(),
-						index: z.number(),
-					})
-				),
-				indexesNewColumn: z.array(
+				newIndexes: z.array(
 					z.object({
 						id: z.string(),
 						index: z.number(),
@@ -67,7 +61,6 @@ export const mainRouter = router({
 			})
 		)
 		.mutation(({ ctx, input }) => {
-			// TODO update indexes
 			ctx.prisma.$transaction([
 				ctx.prisma.column.update({
 					where: { id: input.oldColumnId },
@@ -77,6 +70,12 @@ export const mainRouter = router({
 					where: { id: input.newColumnId },
 					data: { items: { connect: { id: input.itemId } } },
 				}),
+				...input.newIndexes.map((x) =>
+					ctx.prisma.item.update({
+						where: { id: x.id },
+						data: { index: x.index },
+					})
+				),
 			]);
 			return;
 		}),
