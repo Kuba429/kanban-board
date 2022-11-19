@@ -58,12 +58,38 @@ const resetRelative = (toReset: typeof itemsPositions) => {
 	);
 };
 
+const moveItem = ({
+	columns,
+	itemId,
+	parentId,
+	targetId,
+	newIndex,
+}: {
+	columns: Column[];
+	itemId: string;
+	parentId: string;
+	targetId: string;
+	newIndex: number;
+}) => {
+	const newColumns = [...columns];
+	const parentColumn = newColumns.find((b) => b.id === parentId);
+	const targetColumn = newColumns.find((b) => b.id === targetId);
+
+	const itemIndex =
+		parentColumn?.items.findIndex((i) => i.id === itemId) ?? -1;
+	if (itemIndex < 0 || !parentColumn || !targetColumn) return columns;
+	const it = parentColumn.items.splice(itemIndex, 1)[0];
+	if (!it) return columns;
+	targetColumn.items.splice(newIndex, 0, it);
+	return newColumns;
+};
+
 export const Item: FC<{ item: ItemType; parentId: string }> = ({
 	item,
 	parentId,
 }) => {
-	const [, moveItem] = useAtom(moveItemAtom);
-	const [columns] = useAtom(columnsAtom); // used to get new indexes of all items
+	//const [, moveItem] = useAtom(moveItemAtom);
+	const [columns, setColumns] = useAtom(columnsAtom); // used to get new indexes of all items
 	const mutation = trpc.main.moveItem.useMutation();
 	const [style, api] = useSpring(() => ({ to: { x: 0, y: 0 } }));
 	let ogY: number | null = null; // y before item was dragged
@@ -170,14 +196,14 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 					config: { duration },
 				});
 				ogY = null;
-				await sleep(duration);
-				moveItem({
+				const newColumns = moveItem({
+					columns: columns,
 					itemId: item.id,
 					targetId: collidingId,
 					parentId,
 					newIndex,
 				});
-				const newIndexes = getNewItemIndexes(columns, [
+				const newIndexes = getNewItemIndexes(newColumns, [
 					parentId,
 					collidingId,
 				]);
@@ -187,6 +213,8 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 					itemId: item.id,
 					newIndexes,
 				});
+				await sleep(duration);
+				setColumns(newColumns!);
 			}
 			resetRelative(itemsPositions);
 		}
