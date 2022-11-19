@@ -1,7 +1,7 @@
 import { useSession } from "next-auth/react";
 import { type FC } from "react";
 import Layout from "../components/Layout";
-import { boards } from "../server/trpc/router/_app";
+import { type boards } from "../server/trpc/router/_app";
 import { trpc } from "../utils/trpc";
 
 const Home = () => {

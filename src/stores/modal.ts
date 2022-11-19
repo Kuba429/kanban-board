@@ -1,4 +1,4 @@
-import { Item } from "@prisma/client";
+import { type Item } from "@prisma/client";
 import { atom } from "jotai";
 
 export interface ModalAtomType {
