@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import { FC } from "react";
+import { type FC } from "react";
 import Layout from "../components/Layout";
 import { boards } from "../server/trpc/router/_app";
 import { trpc } from "../utils/trpc";
