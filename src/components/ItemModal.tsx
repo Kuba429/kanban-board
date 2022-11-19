@@ -1,3 +1,4 @@
+import { Item } from "@prisma/client";
 import { animated, useSpring } from "@react-spring/web";
 import { useAtom } from "jotai";
 import { useEffect, useState, type FC } from "react";
@@ -57,32 +58,67 @@ export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 			></div>
 			<animated.div
 				style={style}
-				className="[grid-template-rows: auto auto auto] fixed m-auto grid overflow-hidden rounded border border-white/25 bg-black-800 px-12 text-white"
+				className="fixed m-auto flex flex-col overflow-hidden rounded border border-white/25 bg-black-800 px-10 text-white"
 			>
-				<div
-					className={`${opacity} overflow-scroll`}
-					style={{ transitionDuration: duration + "ms" }}
-				>
-					<h1 className="py-5 text-center text-xl">
-						{itemData.title}
-					</h1>
-					<pre className={`whitespace-pre-wrap transition-opacity`}>
-						Lorem, ipsum dolor sit amet consectetur adipisicing
-						elit. Accusantium, odio.
-					</pre>
-				</div>
-				<div
-					className={`${opacity} grid w-full grid-cols-2 gap-5 self-end py-5`}
-					style={{ transitionDuration: duration + "ms" }}
-				>
-					<button onClick={hideModal} className="btn w-full">
-						Cancel
-					</button>
-					<button className="btn-contrast w-full">Confirm</button>
-				</div>
+				<ModalContent
+					opacity={opacity}
+					duration={duration}
+					itemData={itemData}
+					hideModal={hideModal}
+				/>
 			</animated.div>
 		</>
 	);
 };
 
 export default ItemModal;
+
+// nested inside modal to focus only on data and let the parent take care of animation, ui and all that crap
+const ModalContent = ({
+	opacity,
+	duration,
+	itemData,
+	hideModal,
+}: {
+	opacity: string;
+	duration: number;
+	itemData: Item;
+	hideModal: () => Promise<void>;
+}) => {
+	const [title, setTitle] = useState(itemData.title);
+	const [content, setContent] = useState(itemData.content ?? "");
+
+	return (
+		<>
+			<div
+				className={`${opacity} flex h-full flex-col overflow-scroll `}
+				style={{ transitionDuration: duration + "ms" }}
+			>
+				<input
+					onInput={(e) =>
+						setTitle((e.target as HTMLInputElement).value)
+					}
+					value={title}
+					className="my-5 w-full rounded bg-transparent text-center text-xl outline-none transition-colors focus:bg-black-700"
+				/>
+				<textarea
+					className={`h-full w-full resize-none whitespace-pre-wrap rounded bg-transparent px-2 outline-none transition-all focus:bg-black-700`}
+					placeholder="Empty"
+					defaultValue={content}
+					onInput={(e) =>
+						setContent((e.target as HTMLTextAreaElement).value)
+					}
+				></textarea>
+			</div>
+			<div
+				className={`${opacity} grid h-fit w-full grid-cols-2 gap-5 py-5`}
+				style={{ transitionDuration: duration + "ms" }}
+			>
+				<button onClick={hideModal} className="btn w-full">
+					Cancel
+				</button>
+				<button className="btn-contrast w-full">Confirm</button>
+			</div>
+		</>
+	);
+};
