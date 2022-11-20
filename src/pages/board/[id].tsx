@@ -12,9 +12,12 @@ import Column from "../../components/Column";
 const Board: NextPage = () => {
 	const { id } = useRouter().query;
 	const [, setColumns] = useAtom(columnsAtom);
-	const query = trpc.main.getBoard.useQuery({
-		boardId: id?.toString() ?? "",
-	});
+	const query = trpc.main.getBoard.useQuery(
+		{
+			boardId: id?.toString() ?? "",
+		},
+		{ refetchOnWindowFocus: false }
+	);
 	useEffect(() => {
 		query.data && setColumns(query.data.columns);
 	}, [query, setColumns]);

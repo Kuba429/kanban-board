@@ -1,9 +1,11 @@
-import { Item } from "@prisma/client";
+import { type Item } from "@prisma/client";
 import { animated, useSpring } from "@react-spring/web";
 import { useAtom } from "jotai";
 import { useEffect, useState, type FC } from "react";
+import { updateItemAtom } from "../stores/columns";
 import { modalAtom, type ModalAtomType } from "../stores/modal";
 import { sleep } from "../utils/sleep";
+import { trpc } from "../utils/trpc";
 
 export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 	modalState,
@@ -87,7 +89,22 @@ const ModalContent = ({
 }) => {
 	const [title, setTitle] = useState(itemData.title);
 	const [content, setContent] = useState(itemData.content ?? "");
+	const [, updateItem] = useAtom(updateItemAtom);
+	const mutation = trpc.main.updateItem.useMutation({
+		onSuccess: (_, variables) => {
+			updateItem(variables);
+			hideModal();
+		},
+	});
 
+	const handleClick = () => {
+		// only mutate when item has changed
+		if (title === itemData.title && content === itemData.content) {
+			hideModal();
+			return;
+		}
+		mutation.mutate({ id: itemData.id, title: title, content: content });
+	};
 	return (
 		<>
 			<div
@@ -117,7 +134,9 @@ const ModalContent = ({
 				<button onClick={hideModal} className="btn w-full">
 					Cancel
 				</button>
-				<button className="btn-contrast w-full">Confirm</button>
+				<button onClick={handleClick} className="btn-contrast w-full">
+					Confirm
+				</button>
 			</div>
 		</>
 	);

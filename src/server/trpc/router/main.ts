@@ -79,4 +79,18 @@ export const mainRouter = router({
 			]);
 			return;
 		}),
+	updateItem: publicProcedure
+		.input(
+			z.object({
+				title: z.string(),
+				content: z.string(),
+				id: z.string(),
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			await ctx.prisma.item.update({
+				where: { id: input.id },
+				data: { title: input.title, content: input.content },
+			});
+		}),
 });
