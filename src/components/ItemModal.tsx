@@ -134,9 +134,29 @@ const ModalContent = ({
 				<button onClick={hideModal} className="btn w-full">
 					Cancel
 				</button>
-				<button onClick={handleClick} className="btn-contrast w-full">
-					Confirm
-				</button>
+				{mutation.status === "loading" ? (
+					<button
+						disabled
+						onClick={handleClick}
+						className="btn-contrast w-full cursor-wait opacity-60"
+					>
+						Loading
+					</button>
+				) : mutation.status === "error" ? (
+					<button
+						onClick={handleClick}
+						className="btn w-full bg-red-600 text-white"
+					>
+						Try again
+					</button>
+				) : (
+					<button
+						onClick={handleClick}
+						className="btn-contrast w-full"
+					>
+						Confirm
+					</button>
+				)}
 			</div>
 		</>
 	);
