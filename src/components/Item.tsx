@@ -50,7 +50,7 @@ interface ItemPosition {
 		y: number;
 	}>;
 }
-const itemsPositions = new Map<string, ItemPosition>();
+export const itemsPositions = new Map<string, ItemPosition>();
 
 const resetRelative = (toReset: typeof itemsPositions) => {
 	toReset.forEach((i) =>
@@ -257,7 +257,7 @@ const getNewItemIndexes = (columns: Column[], ids: string[]) => {
 	columns.forEach((col) => {
 		if (ids.includes(col.id)) {
 			col.items.forEach((i, index) => {
-				newIndexes.push({ id: i.id, index });
+				!i.isLocalOnly && newIndexes.push({ id: i.id, index }); // ignore local items (ones that haven't been synced with db yet)
 			});
 		}
 	});

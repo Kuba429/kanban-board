@@ -1,10 +1,13 @@
+import { useAtom } from "jotai";
 import { type FC, useEffect, useRef } from "react";
 import { MdDragIndicator } from "react-icons/md";
-import { Column } from "../stores/columns";
+import { BiMessageSquareAdd } from "react-icons/bi";
+import { addItemAtom, Column } from "../stores/columns";
 import { Item } from "./Item";
 
 const Column: FC<{ column: Column }> = ({ column }) => {
 	const columnRef = useRef<HTMLDivElement>(null);
+	const [, addItem] = useAtom(addItemAtom);
 	useEffect(() => {
 		const rect = columnRef.current?.getBoundingClientRect();
 		if (!rect) return;
@@ -16,10 +19,7 @@ const Column: FC<{ column: Column }> = ({ column }) => {
 			<div className="flex items-center justify-between p-3">
 				<h2 className="text-xl">{column.title}</h2>
 				<div className="drag-handle">
-					{
-						// TODO make columns sortable too
-					}
-					<MdDragIndicator />
+					<BiMessageSquareAdd onClick={() => addItem(column.id)} />
 				</div>
 			</div>
 			<div

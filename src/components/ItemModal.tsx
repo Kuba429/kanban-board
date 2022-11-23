@@ -134,6 +134,7 @@ const ModalContent = ({
 				<button onClick={hideModal} className="btn w-full">
 					Cancel
 				</button>
+
 				{mutation.status === "loading" ? (
 					<button
 						disabled

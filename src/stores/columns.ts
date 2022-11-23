@@ -1,10 +1,21 @@
 import { atom } from "jotai";
-import { Prisma } from "@prisma/client";
+import {
+	Prisma,
+	Item as ItemPrisma,
+	Column as ColumnPrisma,
+} from "@prisma/client";
 
-const columnWithItems = Prisma.validator<Prisma.ColumnArgs>()({
-	include: { items: true },
-});
-export type Column = Prisma.ColumnGetPayload<typeof columnWithItems>;
+//const columnWithItems = Prisma.validator<Prisma.ColumnArgs>()({
+//	include: { items: true },
+//});
+//export type Column = Prisma.ColumnGetPayload<typeof columnWithItems>;
+
+export interface Item extends ItemPrisma {
+	isLocalOnly?: boolean;
+}
+export interface Column extends ColumnPrisma {
+	items: Item[];
+}
 
 export const columnsAtom = atom<Column[]>([]);
 
@@ -34,3 +45,16 @@ export const updateItemAtom = atom(
 		set(columnsAtom, cols);
 	}
 );
+
+export const addItemAtom = atom(null, (get, set, columnId: string) => {
+	const columns = [...get(columnsAtom)];
+	columns
+		.find((c) => c.id === columnId)
+		?.items.push({
+			id: crypto.randomUUID(),
+			columnId: columnId,
+			isLocalOnly: true,
+			title: "Untitled",
+		} as Item);
+	set(columnsAtom, columns);
+});
