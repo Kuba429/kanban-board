@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { router, publicProcedure } from "../trpc";
@@ -91,6 +92,38 @@ export const mainRouter = router({
 			await ctx.prisma.item.update({
 				where: { id: input.id },
 				data: { title: input.title, content: input.content },
+			});
+		}),
+	addItem: publicProcedure
+		.input(
+			z.object({
+				title: z.string(),
+				content: z.string(),
+				columnId: z.string(),
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const createdBy = ctx.session?.user?.email;
+			if (!createdBy) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "Please sign in",
+				});
+			}
+			await ctx.prisma.column.update({
+				where: { id: input.columnId },
+				data: {
+					items: {
+						create: [
+							{
+								createdBy,
+								index: 0,
+								content: input.content,
+								title: input.title,
+							},
+						],
+					},
+				},
 			});
 		}),
 });
