@@ -94,7 +94,7 @@ export const mainRouter = router({
 				data: { title: input.title, content: input.content },
 			});
 		}),
-	addItem: publicProcedure
+	createItem: publicProcedure
 		.input(
 			z.object({
 				title: z.string(),
