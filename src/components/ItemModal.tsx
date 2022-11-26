@@ -1,11 +1,25 @@
-import { type Item } from "@prisma/client";
+import { type Item } from "../stores/columns";
 import { animated, useSpring } from "@react-spring/web";
 import { useAtom } from "jotai";
-import { useEffect, useState, type FC } from "react";
+import {
+	type Dispatch,
+	type SetStateAction,
+	useEffect,
+	useState,
+	type FC,
+} from "react";
 import { updateItemAtom } from "../stores/columns";
 import { modalAtom, type ModalAtomType } from "../stores/modal";
 import { sleep } from "../utils/sleep";
 import { trpc } from "../utils/trpc";
+
+const DURATION = 250;
+
+// modal is divided into 3 components:
+// - ItemModal - only modal logic, animation and stuff
+// - ModalUpdate / ModalCreate - handle logic for updating and creating items and pass state and handlers to last component
+// - ModalContent - basically a form. Both components for creating and updating render this component.
+// ModalUpdate and ModalCreate were made to separate their logic while keeping the exact same experience by showing user the same form.
 
 export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 	modalState,
@@ -21,7 +35,6 @@ export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 	const fullVW = document.documentElement.clientWidth;
 	const fullVH = document.documentElement.clientHeight;
 	const margin = { x: fullVW / 20, y: fullVH / 8 };
-	const duration = 250;
 	const [style, api] = useSpring(() => ({
 		from,
 		to: {
@@ -30,42 +43,43 @@ export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 			left: margin.x,
 			top: margin.y,
 		},
-		config: { duration },
+		config: { duration: DURATION },
 	}));
 	const [opacity, setOpacity] = useState("opacity-0");
 	const [bgOpacity, setBgOpacity] = useState("opacity-0");
 	const hideModal = async () => {
 		setOpacity("opacity-0");
-		await sleep(duration);
+		await sleep(DURATION);
 		setBgOpacity("opacity-0");
-		api.start({ to: from, config: { duration } });
-		await sleep(duration);
+		api.start({ to: from, config: { duration: DURATION } });
+		await sleep(DURATION);
 		setModalState(null);
 	};
 	useEffect(() => {
 		setBgOpacity("opacity-1");
 		const timeoutId = setTimeout(() => {
 			setOpacity("opacity-1");
-		}, duration);
+		}, DURATION);
 		return () => {
 			clearTimeout(timeoutId);
 		};
 	}, [setOpacity, setBgOpacity]);
+
+	const ModalAction = itemData.isLocalOnly ? ModalCreate : ModalUpdate;
 	return (
 		<>
 			<div
 				className={`fixed left-0 top-0 h-full w-full backdrop-blur transition-opacity ${bgOpacity}`}
-				style={{ transitionDuration: duration + "ms" }}
+				style={{ transitionDuration: DURATION + "ms" }}
 				onClick={hideModal}
 			></div>
 			<animated.div
 				style={style}
 				className="fixed m-auto flex flex-col overflow-hidden rounded border border-white/25 bg-black-800 px-10 text-white"
 			>
-				<ModalContent
-					opacity={opacity}
-					duration={duration}
+				<ModalAction
 					itemData={itemData}
+					opacity={opacity}
 					hideModal={hideModal}
 				/>
 			</animated.div>
@@ -75,15 +89,12 @@ export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 
 export default ItemModal;
 
-// nested inside modal to focus only on data and let the parent take care of animation, ui and all that crap
-const ModalContent = ({
+const ModalUpdate = ({
 	opacity,
-	duration,
 	itemData,
 	hideModal,
 }: {
 	opacity: string;
-	duration: number;
 	itemData: Item;
 	hideModal: () => Promise<void>;
 }) => {
@@ -106,10 +117,88 @@ const ModalContent = ({
 		mutation.mutate({ id: itemData.id, title: title, content: content });
 	};
 	return (
+		<ModalContent
+			mutationStatus={mutation.status}
+			{...{
+				opacity,
+				hideModal,
+				setContent,
+				setTitle,
+				content,
+				title,
+				handleClick,
+			}}
+		/>
+	);
+};
+
+const ModalCreate = ({
+	opacity,
+	itemData,
+	hideModal,
+}: {
+	opacity: string;
+	itemData: Item;
+	hideModal: () => Promise<void>;
+}) => {
+	const [title, setTitle] = useState(itemData.title);
+	const [content, setContent] = useState(itemData.content ?? "");
+	const [, updateItem] = useAtom(updateItemAtom);
+	// TODO
+	const mutation = trpc.main.updateItem.useMutation({
+		onSuccess: (_, variables) => {
+			updateItem(variables);
+			hideModal();
+		},
+	});
+
+	const handleClick = () => {
+		// only mutate when item has changed
+		if (title === itemData.title && content === itemData.content) {
+			hideModal();
+			return;
+		}
+		mutation.mutate({ id: itemData.id, title: title, content: content });
+	};
+	return (
+		<ModalContent
+			mutationStatus={mutation.status}
+			{...{
+				opacity,
+				hideModal,
+				setContent,
+				setTitle,
+				content,
+				title,
+				handleClick,
+			}}
+		/>
+	);
+};
+const ModalContent = ({
+	opacity,
+	hideModal,
+	title,
+	setTitle,
+	content,
+	setContent,
+	mutationStatus,
+	handleClick,
+}: {
+	opacity: string;
+	hideModal: () => Promise<void>;
+	title: string;
+	setTitle: Dispatch<SetStateAction<string>>;
+	content: string;
+	setContent: Dispatch<SetStateAction<string>>;
+	mutationStatus: string;
+	handleClick: () => void;
+}) => {
+	return (
 		<>
 			<div
 				className={`${opacity} flex h-full flex-col overflow-scroll `}
-				style={{ transitionDuration: duration + "ms" }}
+				style={{ transitionDuration: DURATION + "ms" }}
 			>
 				<input
 					onInput={(e) =>
@@ -129,13 +218,13 @@ const ModalContent = ({
 			</div>
 			<div
 				className={`${opacity} grid h-fit w-full grid-cols-2 gap-5 py-5`}
-				style={{ transitionDuration: duration + "ms" }}
+				style={{ transitionDuration: DURATION + "ms" }}
 			>
 				<button onClick={hideModal} className="btn w-full">
 					Cancel
 				</button>
 
-				{mutation.status === "loading" ? (
+				{mutationStatus === "loading" ? (
 					<button
 						disabled
 						onClick={handleClick}
@@ -143,7 +232,7 @@ const ModalContent = ({
 					>
 						Loading
 					</button>
-				) : mutation.status === "error" ? (
+				) : mutationStatus === "error" ? (
 					<button
 						onClick={handleClick}
 						className="btn w-full bg-red-600 text-white"

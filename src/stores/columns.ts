@@ -1,8 +1,7 @@
 import { atom } from "jotai";
 import {
-	Prisma,
-	Item as ItemPrisma,
-	Column as ColumnPrisma,
+	type Item as ItemPrisma,
+	type Column as ColumnPrisma,
 } from "@prisma/client";
 
 //const columnWithItems = Prisma.validator<Prisma.ColumnArgs>()({
