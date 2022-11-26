@@ -144,10 +144,10 @@ const ModalCreate = ({
 	const [title, setTitle] = useState(itemData.title);
 	const [content, setContent] = useState(itemData.content ?? "");
 	const [, updateItem] = useAtom(updateItemAtom);
-	// TODO
-	const mutation = trpc.main.updateItem.useMutation({
+	const mutation = trpc.main.createItem.useMutation({
 		onSuccess: (_, variables) => {
-			updateItem(variables);
+			//TODO update item
+			//updateItem(variables);
 			hideModal();
 		},
 	});
@@ -158,7 +158,12 @@ const ModalCreate = ({
 			hideModal();
 			return;
 		}
-		mutation.mutate({ id: itemData.id, title: title, content: content });
+		mutation.mutate({
+			title: title,
+			content: content,
+			columnId: itemData.columnId,
+			index: itemData.index ?? 0,
+		});
 	};
 	return (
 		<ModalContent
@@ -191,7 +196,7 @@ const ModalContent = ({
 	setTitle: Dispatch<SetStateAction<string>>;
 	content: string;
 	setContent: Dispatch<SetStateAction<string>>;
-	mutationStatus: string;
+	mutationStatus: string; // TODO figure out to infer type of mutation.status
 	handleClick: () => void;
 }) => {
 	return (

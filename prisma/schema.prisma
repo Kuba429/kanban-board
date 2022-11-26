@@ -31,13 +31,12 @@ model Column {
 }
 
 model Item {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    updatedBy String
-    title     String   @default("Untitled")
-    content   String?
-    index     Int      @default(0)
-    Column    Column?  @relation(fields: [columnId], references: [id])
-    columnId  String?
+    id            String   @id @default(cuid())
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @default(now()) @updatedAt
+    title         String   @default("Untitled")
+    content       String?
+    index         Int      @default(0)
+    Column        Column   @relation(fields: [columnId], references: [id])
+    columnId      String
 }

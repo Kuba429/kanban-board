@@ -100,6 +100,7 @@ export const mainRouter = router({
 				title: z.string(),
 				content: z.string(),
 				columnId: z.string(),
+				index: z.number(),
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -116,8 +117,7 @@ export const mainRouter = router({
 					items: {
 						create: [
 							{
-								createdBy,
-								index: 0,
+								index: input.index,
 								content: input.content,
 								title: input.title,
 							},
