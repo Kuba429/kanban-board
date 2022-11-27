@@ -65,10 +65,6 @@ export const mainRouter = router({
 		.mutation(({ ctx, input }) => {
 			ctx.prisma.$transaction([
 				ctx.prisma.column.update({
-					where: { id: input.oldColumnId },
-					data: { items: { disconnect: { id: input.itemId } } },
-				}),
-				ctx.prisma.column.update({
 					where: { id: input.newColumnId },
 					data: { items: { connect: { id: input.itemId } } },
 				}),

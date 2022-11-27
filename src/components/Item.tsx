@@ -7,7 +7,7 @@ import { columnPositions } from "../components/Column";
 import { type Column, columnsAtom } from "../stores/columns";
 import { sleep } from "../utils/sleep";
 import { modalAtom } from "../stores/modal";
-import { type Item as ItemType } from "@prisma/client";
+import { type Item as ItemType } from "../stores/columns";
 import { trpc } from "../utils/trpc";
 
 export const GAP = 20; // this is tied to custom tailwind spacing variable
@@ -56,32 +56,6 @@ const resetRelative = (toReset: typeof itemsPositions) => {
 	toReset.forEach((i) =>
 		i.api.start({ to: { x: 0, y: 0 }, immediate: true })
 	);
-};
-
-const moveItem = ({
-	columns,
-	itemId,
-	parentId,
-	targetId,
-	newIndex,
-}: {
-	columns: Column[];
-	itemId: string;
-	parentId: string;
-	targetId: string;
-	newIndex: number;
-}) => {
-	const newColumns = [...columns];
-	const parentColumn = newColumns.find((b) => b.id === parentId);
-	const targetColumn = newColumns.find((b) => b.id === targetId);
-
-	const itemIndex =
-		parentColumn?.items.findIndex((i) => i.id === itemId) ?? -1;
-	if (itemIndex < 0 || !parentColumn || !targetColumn) return columns;
-	const it = parentColumn.items.splice(itemIndex, 1)[0];
-	if (!it) return columns;
-	targetColumn.items.splice(newIndex, 0, it);
-	return newColumns;
 };
 
 export const Item: FC<{ item: ItemType; parentId: string }> = ({
@@ -206,12 +180,13 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 					parentId,
 					collidingId,
 				]);
-				mutation.mutate({
-					newColumnId: collidingId,
-					oldColumnId: parentId,
-					itemId: item.id,
-					newIndexes,
-				});
+				!item.isLocalOnly &&
+					mutation.mutate({
+						newColumnId: collidingId,
+						oldColumnId: parentId,
+						itemId: item.id,
+						newIndexes,
+					});
 				await sleep(duration);
 				setColumns(newColumns!);
 			}
@@ -249,6 +224,32 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 			</animated.div>
 		</>
 	);
+};
+
+const moveItem = ({
+	columns,
+	itemId,
+	parentId,
+	targetId,
+	newIndex,
+}: {
+	columns: Column[];
+	itemId: string;
+	parentId: string;
+	targetId: string;
+	newIndex: number;
+}) => {
+	const newColumns = [...columns];
+	const parentColumn = newColumns.find((b) => b.id === parentId);
+	const targetColumn = newColumns.find((b) => b.id === targetId);
+
+	const itemIndex =
+		parentColumn?.items.findIndex((i) => i.id === itemId) ?? -1;
+	if (itemIndex < 0 || !parentColumn || !targetColumn) return columns;
+	const it = parentColumn.items.splice(itemIndex, 1)[0];
+	if (!it) return columns;
+	targetColumn.items.splice(newIndex, 0, it);
+	return newColumns;
 };
 
 const getNewItemIndexes = (columns: Column[], ids: string[]) => {
