@@ -62,7 +62,6 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 	item,
 	parentId,
 }) => {
-	//const [, moveItem] = useAtom(moveItemAtom);
 	const [columns, setColumns] = useAtom(columnsAtom); // used to get new indexes of all items
 	const mutation = trpc.main.moveItem.useMutation();
 	const [style, api] = useSpring(() => ({ to: { x: 0, y: 0 } }));
@@ -248,6 +247,8 @@ const moveItem = ({
 	if (itemIndex < 0 || !parentColumn || !targetColumn) return columns;
 	const it = parentColumn.items.splice(itemIndex, 1)[0];
 	if (!it) return columns;
+	it.index = newIndex;
+	it.columnId = targetId;
 	targetColumn.items.splice(newIndex, 0, it);
 	return newColumns;
 };
