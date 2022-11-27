@@ -27,10 +27,12 @@ export const updateItemAtom = atom(
 			title,
 			content,
 			id,
+			newId,
 		}: {
 			title: string;
-			content: string;
+			content: string | null;
 			id: string;
+			newId?: string;
 		}
 	) => {
 		const cols = [...get(columnsAtom)];
@@ -40,7 +42,12 @@ export const updateItemAtom = atom(
 			.find((i) => i.id === id);
 		if (!itemToChange) return;
 		itemToChange.title = title;
-		itemToChange.content = content;
+		itemToChange.content = content ?? "";
+		itemToChange.isLocalOnly = false;
+		// for newly created items; their ids are local before syncing with db so they have to change after syncing
+		if (newId) {
+			itemToChange.id = newId;
+		}
 		set(columnsAtom, cols);
 	}
 );

@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import cuid from "cuid";
 import { z } from "zod";
 
 import { router, publicProcedure } from "../trpc";
@@ -111,19 +112,24 @@ export const mainRouter = router({
 					message: "Please sign in",
 				});
 			}
-			await ctx.prisma.column.update({
-				where: { id: input.columnId },
-				data: {
-					items: {
-						create: [
-							{
-								index: input.index,
-								content: input.content,
-								title: input.title,
-							},
-						],
+			const newId = cuid();
+			return (
+				await ctx.prisma.column.update({
+					where: { id: input.columnId },
+					data: {
+						items: {
+							create: [
+								{
+									id: newId,
+									index: input.index,
+									content: input.content,
+									title: input.title,
+								},
+							],
+						},
 					},
-				},
-			});
+					select: { items: { where: { id: newId } } },
+				})
+			).items[0];
 		}),
 });

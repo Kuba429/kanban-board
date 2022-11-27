@@ -145,13 +145,20 @@ const ModalCreate = ({
 	const [content, setContent] = useState(itemData.content ?? "");
 	const [, updateItem] = useAtom(updateItemAtom);
 	const mutation = trpc.main.createItem.useMutation({
-		onSuccess: (_, variables) => {
-			//TODO update item
-			//updateItem(variables);
+		onSuccess: () => {
 			hideModal();
 		},
 	});
-
+	useEffect(() => {
+		console.log(mutation.data);
+		mutation.data &&
+			updateItem({
+				id: itemData.id,
+				content: mutation.data.content,
+				title: mutation.data.title,
+				newId: mutation.data?.id,
+			});
+	}, [mutation.data, itemData.id, updateItem]);
 	const handleClick = () => {
 		// only mutate when item has changed
 		if (title === itemData.title && content === itemData.content) {
