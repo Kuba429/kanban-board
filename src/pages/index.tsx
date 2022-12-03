@@ -2,6 +2,7 @@ import { useSession } from "next-auth/react";
 import { type FC } from "react";
 import Layout from "../components/Layout";
 import { type boards } from "../server/trpc/router/_app";
+import { AiOutlinePlus } from "react-icons/ai";
 import { trpc } from "../utils/trpc";
 
 const Home = () => {
@@ -9,6 +10,7 @@ const Home = () => {
 	const query = trpc.main.getBoards.useQuery(undefined, {
 		enabled: session?.user ? true : false,
 	});
+	//const mutation = trpc.main.createBoard()
 	if (!session)
 		return (
 			<Layout>
@@ -33,6 +35,12 @@ const Home = () => {
 				{query.data.map((x) => (
 					<Board board={x} key={x.id} />
 				))}
+				<div
+					onClick={() => alert("TODO")}
+					className="flex h-24 cursor-pointer items-center justify-center rounded border border-transparent bg-black-200 p-5 text-black-900 transition-colors hover:border-white hover:bg-black-100"
+				>
+					<AiOutlinePlus className="text-2xl" />
+				</div>
 			</div>
 		</Layout>
 	);
@@ -44,7 +52,7 @@ const Board: FC<{ board: boards[number] }> = ({ board }) => {
 	return (
 		<a
 			href={`/board/${board.id}`}
-			className="h-24 rounded bg-black-700 p-5"
+			className="h-24 rounded border border-transparent bg-black-700 p-5 transition-colors hover:border-black-100 hover:bg-black-600"
 		>
 			{board.title}
 		</a>

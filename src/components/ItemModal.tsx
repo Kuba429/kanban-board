@@ -89,15 +89,17 @@ export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 
 export default ItemModal;
 
+type ModalUpdateOrCreateProps = {
+	opacity: string;
+	itemData: Item;
+	hideModal: () => Promise<void>;
+};
+
 const ModalUpdate = ({
 	opacity,
 	itemData,
 	hideModal,
-}: {
-	opacity: string;
-	itemData: Item;
-	hideModal: () => Promise<void>;
-}) => {
+}: ModalUpdateOrCreateProps) => {
 	const [title, setTitle] = useState(itemData.title);
 	const [content, setContent] = useState(itemData.content ?? "");
 	const [, updateItem] = useAtom(updateItemAtom);
@@ -136,11 +138,7 @@ const ModalCreate = ({
 	opacity,
 	itemData,
 	hideModal,
-}: {
-	opacity: string;
-	itemData: Item;
-	hideModal: () => Promise<void>;
-}) => {
+}: ModalUpdateOrCreateProps) => {
 	const [title, setTitle] = useState(itemData.title);
 	const [content, setContent] = useState(itemData.content ?? "");
 	const [, updateItem] = useAtom(updateItemAtom);
