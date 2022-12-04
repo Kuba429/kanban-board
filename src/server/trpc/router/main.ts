@@ -128,4 +128,20 @@ export const mainRouter = router({
 				})
 			).items[0];
 		}),
+	createBoard: publicProcedure
+		.input(z.object({ name: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			const email = ctx.session?.user?.email;
+			if (!email) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "Please sign in",
+				});
+			}
+			const res = await ctx.prisma.board.create({
+				data: { createdBy: email, title: input.name },
+			});
+
+			return { id: res.id, title: res.title };
+		}),
 });

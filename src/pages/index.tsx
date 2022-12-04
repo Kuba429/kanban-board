@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import { type FC } from "react";
+import { useEffect, type FC } from "react";
 import Layout from "../components/Layout";
 import { type boards } from "../server/trpc/router/_app";
 import { AiOutlinePlus } from "react-icons/ai";
@@ -10,7 +10,17 @@ const Home = () => {
 	const query = trpc.main.getBoards.useQuery(undefined, {
 		enabled: session?.user ? true : false,
 	});
-	//const mutation = trpc.main.createBoard()
+	const mutation = trpc.main.createBoard.useMutation();
+	const trpcContext = trpc.useContext();
+	useEffect(() => {
+		trpcContext.main.getBoards.setData((oldData) => {
+			if (!mutation.data || !oldData) return oldData;
+			return [
+				...oldData,
+				{ id: mutation.data.id, title: mutation.data.title },
+			];
+		});
+	}, [mutation.data, trpcContext]);
 	if (!session)
 		return (
 			<Layout>
@@ -29,6 +39,11 @@ const Home = () => {
 				<h1>error</h1>
 			</Layout>
 		);
+
+	const handleClick = async () => {
+		const res = mutation.mutate({ name: "test" });
+		console.log(res);
+	};
 	return (
 		<Layout>
 			<div className="grid grid-cols-5 gap-5 p-5">
@@ -36,7 +51,7 @@ const Home = () => {
 					<Board board={x} key={x.id} />
 				))}
 				<div
-					onClick={() => alert("TODO")}
+					onClick={() => handleClick()}
 					className="flex h-24 cursor-pointer items-center justify-center rounded border border-transparent bg-black-200 p-5 text-black-900 transition-colors hover:border-white hover:bg-black-100"
 				>
 					<AiOutlinePlus className="text-2xl" />
