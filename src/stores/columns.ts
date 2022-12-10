@@ -18,9 +18,9 @@ export interface Column extends ColumnPrisma {
 
 export const columnsAtom = atom<Column[]>([]);
 export const addColumnAtom = atom(null, (get, set, update: Column) => {
-	const old = [...get(columnsAtom)];
-	console.log(old);
-	set(columnsAtom, [update]);
+	const columns = [...get(columnsAtom)];
+	columns.push(update);
+	set(columnsAtom, columns);
 });
 export const updateItemAtom = atom(
 	null,

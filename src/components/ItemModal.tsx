@@ -148,7 +148,6 @@ const ModalCreate = ({
 		},
 	});
 	useEffect(() => {
-		console.log(mutation.data);
 		mutation.data &&
 			updateItem({
 				id: itemData.id,

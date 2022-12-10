@@ -6,7 +6,7 @@ interface LayoutProps {
 }
 const Layout = ({ children }: LayoutProps) => {
 	return (
-		<div className="flex h-full flex-col bg-black-800 text-white">
+		<div className="flex h-full flex-col overflow-x-hidden bg-black-800 text-white">
 			<Drawer />
 			{children}
 		</div>

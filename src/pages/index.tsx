@@ -41,8 +41,7 @@ const Home = () => {
 		);
 
 	const handleClick = async () => {
-		const res = mutation.mutate({ name: "test" });
-		console.log(res);
+		mutation.mutate({ name: "test" });
 	};
 	return (
 		<Layout>

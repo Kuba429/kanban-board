@@ -1,19 +1,26 @@
 import { useAtom } from "jotai";
-import { type FC, useEffect, useRef } from "react";
-import { MdDragIndicator } from "react-icons/md";
+import { type FC, useEffect, useRef, useCallback } from "react";
 import { BiMessageSquareAdd } from "react-icons/bi";
 import { addItemAtom, Column } from "../stores/columns";
 import { Item } from "./Item";
+import { columnsScrollAtom } from "../stores/scrolls";
 
 const Column: FC<{ column: Column }> = ({ column }) => {
 	const columnRef = useRef<HTMLDivElement>(null);
 	const [, addItem] = useAtom(addItemAtom);
-	useEffect(() => {
+	const updatePosition = useCallback(() => {
 		const rect = columnRef.current?.getBoundingClientRect();
 		if (!rect) return;
 		const { x, y, width, height } = rect;
 		columnPositions.set(column.id, { x, y, width, height });
+	}, [columnRef]);
+	useEffect(() => {
+		updatePosition();
 	}, [column.id]);
+	const [columnsScroll] = useAtom(columnsScrollAtom);
+	useEffect(() => {
+		updatePosition();
+	}, [columnsScroll]);
 	return (
 		<div className="flex h-4/5 w-72 flex-col rounded-xl border border-white/25 bg-black-800 text-white">
 			<div className="flex items-center justify-between p-3">
