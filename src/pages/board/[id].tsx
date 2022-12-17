@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import { type NextPage } from "next";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { columnsAtom, addColumnAtom } from "../../stores/columns";
 import { ItemModal } from "../../components/ItemModal";
 import { modalAtom } from "../../stores/modal";
@@ -9,6 +9,7 @@ import { useRouter } from "next/router";
 import { trpc } from "../../utils/trpc";
 import Column from "../../components/Column";
 import { columnsScrollAtom } from "../../stores/scrolls";
+import { throttle } from "../../utils/throttle";
 
 const Board: NextPage = () => {
 	const { id } = useRouter().query;
@@ -37,10 +38,10 @@ const Columns = () => {
 	const [columns] = useAtom(columnsAtom);
 	const [, setScroll] = useAtom(columnsScrollAtom);
 	const divRef = useRef<HTMLDivElement>(null);
-	// TODO throttle it
-	const handleScroll = () => {
-		setScroll(divRef.current?.scrollLeft ?? 0);
-	};
+	const handleScroll = useMemo(
+		() => throttle(() => setScroll(divRef.current?.scrollLeft ?? 0), 1000),
+		[setScroll, divRef]
+	);
 	return (
 		<div
 			ref={divRef}
