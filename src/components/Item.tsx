@@ -9,7 +9,6 @@ import { sleep } from "../utils/sleep";
 import { modalAtom } from "../stores/modal";
 import { type Item as ItemType } from "../stores/columns";
 import { trpc } from "../utils/trpc";
-import { columnsScrollAtom } from "../stores/scrolls";
 
 export const GAP = 20; // this is tied to custom tailwind spacing variable
 
@@ -82,8 +81,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 				resetRelative(itemsPositions);
 				return;
 			}
-			// TODO move to left and top instead of x and y and make it more clear
-			const { left: x, y, width, height } = rect;
+			const { left: x, top: y, width, height } = rect;
 			if (!ogY) {
 				ogY = y;
 			}
@@ -126,7 +124,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 		} else {
 			const rect = itemRef.current?.getBoundingClientRect();
 			if (!rect) return;
-			const { left: x, y, width, height } = rect;
+			const { left: x, top: y, width, height } = rect;
 			const col = getColliding({
 				x,
 				y,
