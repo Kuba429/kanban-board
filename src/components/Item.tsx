@@ -68,10 +68,8 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 	let ogY: number | null = null; // y before item was dragged
 	const itemRef = useRef<HTMLDivElement>(null);
 	const bind = useDrag(async (state) => {
-		// map is being copied this way in order to avoid referencing the same value
-		const itemsLocal: typeof itemsPositions = new Map();
-		itemsPositions.forEach((val, key) => itemsLocal.set(key, { ...val }));
 		if (state.down) {
+			const itemsLocal = copyMap(itemsPositions);
 			api.start({
 				to: { x: state.movement[0], y: state.movement[1] },
 				config: { duration: 20 },
@@ -267,4 +265,11 @@ const getNewItemIndexes = (columns: Column[], ids: string[]) => {
 		}
 	});
 	return newIndexes;
+};
+
+// map is being copied this way in order to avoid referencing the same value
+const copyMap = <T, K>(originalMap: Map<T, K>) => {
+	const newMap: typeof originalMap = new Map();
+	originalMap.forEach((val, key) => newMap.set(key, { ...val }));
+	return newMap;
 };
