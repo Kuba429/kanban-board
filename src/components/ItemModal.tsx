@@ -12,6 +12,7 @@ import { updateItemAtom } from "../stores/columns";
 import { modalAtom, type ModalAtomType } from "../stores/modal";
 import { sleep } from "../utils/sleep";
 import { trpc } from "../utils/trpc";
+import { AiFillDelete } from "react-icons/ai";
 
 const DURATION = 250;
 
@@ -224,6 +225,7 @@ const ModalContent = ({
 						setContent((e.target as HTMLTextAreaElement).value)
 					}
 				></textarea>
+				<DeleteItemButton hideModal={hideModal} />
 			</div>
 			<div
 				className={`${opacity} grid h-fit w-full grid-cols-2 gap-5 py-5`}
@@ -258,5 +260,27 @@ const ModalContent = ({
 				)}
 			</div>
 		</>
+	);
+};
+
+const DeleteItemButton = ({
+	hideModal,
+}: {
+	hideModal: () => Promise<void>;
+}) => {
+	const handleClick = async () => {
+		console.log("click");
+		await hideModal();
+	};
+	return (
+		<button
+			onClick={handleClick}
+			className="text-red inline-flex w-fit items-center gap-1 rounded bg-red-500 p-2"
+		>
+			{
+				//TODO improve design so it doesn't look out of place
+			}
+			<AiFillDelete /> Delete
+		</button>
 	);
 };
