@@ -11,11 +11,15 @@ body,
 }
 
 @layer components {
-	.drag-handle {
-		@apply aspect-square cursor-move touch-none rounded p-1 transition-all hover:bg-black-100/10;
-	}
 	.btn {
 		@apply rounded border border-white/25 bg-black-900 p-4 transition-colors hover:border-white;
+	}
+	.btn-icon {
+		@apply aspect-square cursor-pointer touch-none rounded p-1 transition-all hover:bg-black-100/10;
+	}
+
+	.drag-handle {
+		@apply btn-icon cursor-move;
 	}
 	.btn-contrast {
 		@apply rounded border bg-white p-4 text-black-900 transition-colors hover:border-black-900;

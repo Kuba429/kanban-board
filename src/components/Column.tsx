@@ -22,7 +22,7 @@ const Column: FC<{ column: Column }> = ({ column }) => {
 		<div className="flex h-4/5 w-72 flex-col rounded-xl border border-white/25 bg-black-800 text-white">
 			<div className="flex items-center justify-between p-3">
 				<h2 className="text-xl">{column.title}</h2>
-				<div className="drag-handle">
+				<div className="btn-icon">
 					<BiMessageSquareAdd onClick={() => addItem(column.id)} />
 				</div>
 			</div>
