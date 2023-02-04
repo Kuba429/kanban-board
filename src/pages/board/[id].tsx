@@ -14,7 +14,7 @@ import { throttle } from "../../utils/throttle";
 const Board: NextPage = () => {
 	const { id } = useRouter().query;
 	const [, setColumns] = useAtom(columnsAtom);
-	const query = trpc.main.getBoard.useQuery(
+	const query = trpc.board.getBoard.useQuery(
 		{
 			boardId: id?.toString() ?? "",
 		},
@@ -60,7 +60,7 @@ const Columns = () => {
 const AddColumn = () => {
 	const { id } = useRouter().query;
 	const [, addColumn] = useAtom(addColumnAtom);
-	const mutation = trpc.main.createColumn.useMutation();
+	const mutation = trpc.column.createColumn.useMutation();
 	const handleClick = async () => {
 		mutation.mutate({ boardId: id?.toString() ?? "" });
 	};

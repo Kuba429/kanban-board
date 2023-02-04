@@ -3,7 +3,7 @@ import { trpc } from "../utils/trpc";
 
 const AuthTest = () => {
 	const { data: session } = useSession();
-	const query = trpc.main.getBoards.useQuery(undefined, {
+	const query = trpc.board.getBoards.useQuery(undefined, {
 		enabled: session?.user ? true : false, // can't just cast it as bool for whatever reason
 	});
 	if (session) {

@@ -63,7 +63,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 	parentId,
 }) => {
 	const [columns, setColumns] = useAtom(columnsAtom); // used to get new indexes of all items
-	const mutation = trpc.main.moveItem.useMutation();
+	const mutation = trpc.item.moveItem.useMutation();
 	const [style, api] = useSpring(() => ({ to: { x: 0, y: 0 } }));
 	let ogY: number | null = null; // y before item was dragged
 	const itemRef = useRef<HTMLDivElement>(null);

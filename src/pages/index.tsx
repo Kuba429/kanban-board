@@ -7,13 +7,13 @@ import { trpc } from "../utils/trpc";
 
 const Home = () => {
 	const { data: session } = useSession();
-	const query = trpc.main.getBoards.useQuery(undefined, {
+	const query = trpc.board.getBoards.useQuery(undefined, {
 		enabled: session?.user ? true : false,
 	});
-	const mutation = trpc.main.createBoard.useMutation();
+	const mutation = trpc.board.createBoard.useMutation();
 	const trpcContext = trpc.useContext();
 	useEffect(() => {
-		trpcContext.main.getBoards.setData((oldData) => {
+		trpcContext.board.getBoards.setData((oldData) => {
 			if (!mutation.data || !oldData) return oldData;
 			return [
 				...oldData,

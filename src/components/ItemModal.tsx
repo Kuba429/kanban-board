@@ -104,7 +104,7 @@ const ModalUpdate = ({
 	const [title, setTitle] = useState(itemData.title);
 	const [content, setContent] = useState(itemData.content ?? "");
 	const [, updateItem] = useAtom(updateItemAtom);
-	const mutation = trpc.main.updateItem.useMutation({
+	const mutation = trpc.item.updateItem.useMutation({
 		onSuccess: (_, variables) => {
 			updateItem(variables);
 			hideModal();
@@ -143,7 +143,7 @@ const ModalCreate = ({
 	const [title, setTitle] = useState(itemData.title);
 	const [content, setContent] = useState(itemData.content ?? "");
 	const [, updateItem] = useAtom(updateItemAtom);
-	const mutation = trpc.main.createItem.useMutation({
+	const mutation = trpc.item.createItem.useMutation({
 		onSuccess: () => {
 			hideModal();
 		},
