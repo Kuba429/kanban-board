@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test, it } from "vitest";
-import { Item } from "../src/components/Item";
+import { copyMap, Item } from "../src/components/Item";
 import { type Item as ItemInterface } from "../src/stores/columns";
 
 test("Item component", () => {
@@ -23,4 +23,18 @@ test("Item component", () => {
 	it("item displays title", () => {
 		expect(itemElement).toHaveTextContent(itemProp.title);
 	});
+});
+
+// functions from Item file
+test("copy map", () => {
+	const originalMap = new Map([
+		["a", { a: "abcdefg" }],
+		["b", { a: "vvv" }],
+		["c", { a: "pppasdasd" }],
+		["d", { a: "123" }],
+	]);
+	const copiedMap = copyMap(originalMap);
+	expect(JSON.stringify([...originalMap.entries()])).toEqual(
+		JSON.stringify([...copiedMap.entries()])
+	);
 });

@@ -269,7 +269,7 @@ const getNewItemIndexes = (columns: Column[], ids: string[]) => {
 };
 
 // map is being copied this way in order to avoid referencing the same value
-const copyMap = <T, K>(originalMap: Map<T, K>) => {
+export const copyMap = <T, K>(originalMap: Map<T, K>) => {
 	const newMap: typeof originalMap = new Map();
 	originalMap.forEach((val, key) => newMap.set(key, { ...val }));
 	return newMap;
