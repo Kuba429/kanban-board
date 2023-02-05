@@ -213,6 +213,7 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 	return (
 		<>
 			<animated.div
+				data-testid="item"
 				style={style}
 				ref={itemRef}
 				className="flex w-11/12 items-center justify-between rounded-md border border-white/25 bg-black-800 p-4 transition-colors hover:border-white"
