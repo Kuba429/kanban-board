@@ -14,12 +14,17 @@ beforeAll(() => {
 		trpc: {
 			item: {
 				moveItem: {
-					useMutation: () => ({
-						mutate: () => () => console.log("mutate"),
-						status: "success",
-					}),
+					useMutation: useMutationMock,
 				},
 			},
 		},
 	}));
+});
+
+const useMutationMock = (props: any) => ({
+	mutate: () => {
+		props?.onSuccess();
+		console.log("mutate");
+	},
+	status: "success",
 });
