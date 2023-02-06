@@ -14,10 +14,10 @@ beforeAll(() => {
 		trpc: {
 			item: {
 				moveItem: {
-					useMutation: vi.fn(() => ({
-						mutate: vi.fn(() => () => console.log("mutate")),
+					useMutation: () => ({
+						mutate: () => () => console.log("mutate"),
 						status: "success",
-					})),
+					}),
 				},
 			},
 		},
