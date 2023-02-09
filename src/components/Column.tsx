@@ -19,7 +19,10 @@ const Column: FC<{ column: Column }> = ({ column }) => {
 		updatePosition();
 	}, [columnsScroll, columnsCount, column, updatePosition]);
 	return (
-		<div className="flex h-4/5 w-72 flex-col rounded-xl border border-white/25 bg-black-800 text-white">
+		<div
+			data-testid="column"
+			className="flex h-4/5 w-72 flex-col rounded-xl border border-white/25 bg-black-800 text-white"
+		>
 			<div className="flex items-center justify-between p-3">
 				<h2 className="text-xl">{column.title}</h2>
 				<div className="btn-icon">
