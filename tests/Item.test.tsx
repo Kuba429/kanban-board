@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import { expect, test, it } from "vitest";
+import { expect, test, describe } from "vitest";
 import { copyMap, Item } from "../src/components/Item";
 import { type Item as ItemInterface } from "../src/stores/columns";
 
-test("Item component", () => {
+describe("Item component", () => {
 	const itemProp: ItemInterface = {
 		id: "some id",
 		index: 0,
@@ -17,10 +17,10 @@ test("Item component", () => {
 		<Item item={itemProp} key={itemProp.id} parentId={itemProp.columnId} />
 	);
 	const itemElement = screen.getByTestId("item");
-	it("item exists", () => {
+	test("item exists", () => {
 		expect(itemElement).toBeInTheDocument();
 	});
-	it("item displays title", () => {
+	test("item displays title", () => {
 		expect(itemElement).toHaveTextContent(itemProp.title);
 	});
 });
