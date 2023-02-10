@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { expect, test, describe } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { copyMap, Item } from "../src/components/Item";
 import { type Item as ItemInterface } from "../src/stores/columns";
 
@@ -13,14 +13,22 @@ describe("Item component", () => {
 		createdAt: new Date(),
 		updatedAt: new Date(),
 	};
-	render(
-		<Item item={itemProp} key={itemProp.id} parentId={itemProp.columnId} />
-	);
-	const itemElement = screen.getByTestId("item");
+	beforeEach(() => {
+		render(
+			<Item
+				item={itemProp}
+				key={itemProp.id}
+				parentId={itemProp.columnId}
+			/>
+		);
+	});
+	afterEach(() => cleanup());
 	test("item exists", () => {
+		const itemElement = screen.getByTestId("item");
 		expect(itemElement).toBeInTheDocument();
 	});
 	test("item displays title", () => {
+		const itemElement = screen.getByTestId("item");
 		expect(itemElement).toHaveTextContent(itemProp.title);
 	});
 });

@@ -25,7 +25,7 @@ const Column: FC<{ column: Column }> = ({ column }) => {
 		>
 			<div className="flex items-center justify-between p-3">
 				<h2 className="text-xl">{column.title}</h2>
-				<div className="btn-icon">
+				<div data-testid="add-item-button" className="btn-icon">
 					<BiMessageSquareAdd onClick={() => addItem(column.id)} />
 				</div>
 			</div>

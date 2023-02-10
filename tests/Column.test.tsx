@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, test, expect } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import Column from "../src/components/Column";
 import { Column as ColumnType } from "../src/stores/columns";
 describe("Column component", () => {
@@ -33,13 +33,19 @@ describe("Column component", () => {
 		createdAt: new Date(),
 		updatedAt: new Date(),
 	};
-	render(<Column column={columnProp} key={columnProp.id} />);
-	const columnElement = screen.getByTestId("column");
+	beforeEach(() => {
+		render(<Column column={columnProp} key={columnProp.id} />);
+	});
+	afterEach(() => cleanup());
 	test("column exists", () => {
-		expect(columnElement).toBeInTheDocument();
+		expect(screen.getByTestId("column")).toBeInTheDocument();
 	});
 	test("has correct number of items", () => {
+		const columnElement = screen.getByTestId("column");
 		const items = columnElement.querySelectorAll('[data-testid="item"]');
+		items.forEach((i) => {
+			expect(i).toBeInTheDocument();
+		});
 		expect(items.length).toEqual(columnProp.items.length);
 	});
 });
