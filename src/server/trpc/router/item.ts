@@ -4,6 +4,11 @@ import { z } from "zod";
 import { publicProcedure, router } from "../trpc";
 
 export const itemRouter = router({
+	deleteItem: publicProcedure
+		.input(z.object({ itemId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			await ctx.prisma.item.delete({ where: { id: input.itemId } });
+		}),
 	moveItem: publicProcedure
 		.input(
 			z.object({

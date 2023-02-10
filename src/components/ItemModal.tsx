@@ -130,6 +130,7 @@ const ModalUpdate = ({
 				content,
 				title,
 				handleClick,
+				itemId: itemData.id,
 			}}
 		/>
 	);
@@ -181,6 +182,7 @@ const ModalCreate = ({
 				content,
 				title,
 				handleClick,
+				itemId: itemData.id,
 			}}
 		/>
 	);
@@ -194,6 +196,7 @@ const ModalContent = ({
 	setContent,
 	mutationStatus,
 	handleClick,
+	itemId,
 }: {
 	opacity: string;
 	hideModal: () => Promise<void>;
@@ -203,6 +206,7 @@ const ModalContent = ({
 	setContent: Dispatch<SetStateAction<string>>;
 	mutationStatus: string; // TODO figure out to infer type of mutation.status
 	handleClick: () => void;
+	itemId: string;
 }) => {
 	return (
 		<>
@@ -225,7 +229,7 @@ const ModalContent = ({
 						setContent((e.target as HTMLTextAreaElement).value)
 					}
 				></textarea>
-				<DeleteItemButton hideModal={hideModal} />
+				<DeleteItemButton itemId={itemId} hideModal={hideModal} />
 			</div>
 			<div
 				className={`${opacity} grid h-fit w-full grid-cols-2 gap-5 py-5`}
@@ -265,12 +269,18 @@ const ModalContent = ({
 
 const DeleteItemButton = ({
 	hideModal,
+	itemId,
 }: {
 	hideModal: () => Promise<void>;
+	itemId: string;
 }) => {
+	const deleteMutation = trpc.item.deleteItem.useMutation({
+		onSuccess: async () => {
+			await hideModal();
+		},
+	});
 	const handleClick = async () => {
-		console.log("click");
-		await hideModal();
+		deleteMutation.mutate({ itemId });
 	};
 	return (
 		<button
