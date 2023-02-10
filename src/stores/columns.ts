@@ -1,4 +1,5 @@
 import { atom } from "jotai";
+import { v4 } from "uuid";
 import {
 	type Item as ItemPrisma,
 	type Column as ColumnPrisma,
@@ -61,7 +62,7 @@ export const addItemAtom = atom(null, (get, set, columnId: string) => {
 	columns
 		.find((c) => c.id === columnId)
 		?.items.push({
-			id: crypto.randomUUID(),
+			id: v4(),
 			columnId: columnId,
 			isLocalOnly: true,
 			title: "Untitled",

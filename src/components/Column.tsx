@@ -1,11 +1,11 @@
 import { useAtom } from "jotai";
 import { type FC, useEffect, useRef, useCallback } from "react";
 import { BiMessageSquareAdd } from "react-icons/bi";
-import { addItemAtom, Column } from "../stores/columns";
+import { addItemAtom, type Column as ColumnType } from "../stores/columns";
 import { Item } from "./Item";
 import { columnsScrollAtom } from "../stores/scrolls";
 
-const Column: FC<{ column: Column }> = ({ column }) => {
+const Column: FC<{ column: ColumnType }> = ({ column }) => {
 	const columnRef = useRef<HTMLDivElement>(null);
 	const [columnsCount, addItem] = useAtom(addItemAtom);
 	const updatePosition = useCallback(() => {
@@ -25,8 +25,12 @@ const Column: FC<{ column: Column }> = ({ column }) => {
 		>
 			<div className="flex items-center justify-between p-3">
 				<h2 className="text-xl">{column.title}</h2>
-				<div data-testid="add-item-button" className="btn-icon">
-					<BiMessageSquareAdd onClick={() => addItem(column.id)} />
+				<div
+					onClick={() => addItem(column.id)}
+					data-testid="add-item-button"
+					className="btn-icon"
+				>
+					<BiMessageSquareAdd />
 				</div>
 			</div>
 			<div
