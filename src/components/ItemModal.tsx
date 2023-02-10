@@ -1,4 +1,4 @@
-import { type Item } from "../stores/columns";
+import { deleteItemAtom, type Item } from "../stores/columns";
 import { animated, useSpring } from "@react-spring/web";
 import { useAtom } from "jotai";
 import {
@@ -130,7 +130,7 @@ const ModalUpdate = ({
 				content,
 				title,
 				handleClick,
-				itemId: itemData.id,
+				itemData,
 			}}
 		/>
 	);
@@ -182,7 +182,7 @@ const ModalCreate = ({
 				content,
 				title,
 				handleClick,
-				itemId: itemData.id,
+				itemData,
 			}}
 		/>
 	);
@@ -196,7 +196,7 @@ const ModalContent = ({
 	setContent,
 	mutationStatus,
 	handleClick,
-	itemId,
+	itemData,
 }: {
 	opacity: string;
 	hideModal: () => Promise<void>;
@@ -206,7 +206,7 @@ const ModalContent = ({
 	setContent: Dispatch<SetStateAction<string>>;
 	mutationStatus: string; // TODO figure out to infer type of mutation.status
 	handleClick: () => void;
-	itemId: string;
+	itemData: Item;
 }) => {
 	return (
 		<>
@@ -229,7 +229,7 @@ const ModalContent = ({
 						setContent((e.target as HTMLTextAreaElement).value)
 					}
 				></textarea>
-				<DeleteItemButton itemId={itemId} hideModal={hideModal} />
+				<DeleteItemButton itemData={itemData} hideModal={hideModal} />
 			</div>
 			<div
 				className={`${opacity} grid h-fit w-full grid-cols-2 gap-5 py-5`}
@@ -269,18 +269,25 @@ const ModalContent = ({
 
 const DeleteItemButton = ({
 	hideModal,
-	itemId,
+	itemData,
 }: {
 	hideModal: () => Promise<void>;
-	itemId: string;
+	itemData: Item;
 }) => {
+	const [_, deleteItem] = useAtom(deleteItemAtom);
 	const deleteMutation = trpc.item.deleteItem.useMutation({
 		onSuccess: async () => {
+			deleteItem(itemData);
 			await hideModal();
 		},
 	});
 	const handleClick = async () => {
-		deleteMutation.mutate({ itemId });
+		if (itemData.isLocalOnly) {
+			deleteItem(itemData);
+			hideModal();
+			return;
+		}
+		deleteMutation.mutate({ itemId: itemData.id });
 	};
 	return (
 		<button

@@ -69,3 +69,16 @@ export const addItemAtom = atom(null, (get, set, columnId: string) => {
 		} as Item);
 	set(columnsAtom, columns);
 });
+
+export const deleteItemAtom = atom(null, (get, set, itemData: Item) => {
+	const columns = [...get(columnsAtom)];
+	const parentCol = columns.find((c) => c.id === itemData.columnId);
+	const itemIdx = parentCol?.items.findIndex((i) => i.id === itemData.id);
+	if (!parentCol || itemIdx === undefined) {
+		console.log(itemIdx);
+		return;
+	}
+	const a = parentCol.items.splice(itemIdx, 1);
+	console.log(a);
+	set(columnsAtom, columns);
+});
