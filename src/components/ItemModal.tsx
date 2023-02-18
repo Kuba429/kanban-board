@@ -13,14 +13,20 @@ import { modalAtom, type ModalAtomType } from "../stores/modal";
 import { sleep } from "../utils/sleep";
 import { trpc } from "../utils/trpc";
 import { AiFillDelete } from "react-icons/ai";
+import {
+	confirmModalAtom,
+	confirmWithModalAtom as confirmWithModalAtom,
+} from "./ConfirmModal";
 
-const DURATION = 250;
+export const DURATION = 250;
 
 // modal is divided into 3 components:
 // - ItemModal - only modal logic, animation and stuff
 // - ModalUpdate / ModalCreate - handle logic for updating and creating items and pass state and handlers to last component
 // - ModalContent - basically a form. Both components for creating and updating render this component.
 // ModalUpdate and ModalCreate were made to separate their logic while keeping the exact same experience by showing user the same form.
+//
+// Please note that even though this component is separated, it's parts aren't meant to be used independently. It is tailored specifically for this situation
 
 export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 	modalState,
@@ -70,13 +76,13 @@ export const ItemModal: FC<{ modalState: ModalAtomType }> = ({
 	return (
 		<>
 			<div
-				className={`fixed left-0 top-0 h-full w-full backdrop-blur transition-opacity ${bgOpacity}`}
+				className={`fixed left-0 top-0 z-10 h-full w-full backdrop-blur transition-opacity ${bgOpacity}`}
 				style={{ transitionDuration: DURATION + "ms" }}
 				onClick={hideModal}
 			></div>
 			<animated.div
 				style={style}
-				className="fixed m-auto flex flex-col overflow-hidden rounded border border-white/25 bg-black-800 px-10 text-white"
+				className="fixed z-20 m-auto flex flex-col overflow-hidden rounded border border-white/25 bg-black-800 px-10 text-white"
 			>
 				<ModalAction
 					itemData={itemData}
@@ -274,20 +280,27 @@ const DeleteItemButton = ({
 	hideModal: () => Promise<void>;
 	itemData: Item;
 }) => {
-	const [_, deleteItem] = useAtom(deleteItemAtom);
+	const [, deleteItem] = useAtom(deleteItemAtom);
 	const deleteMutation = trpc.item.deleteItem.useMutation({
 		onSuccess: async () => {
 			deleteItem(itemData);
 			await hideModal();
 		},
 	});
+	const [, confirmWithModal] = useAtom(confirmModalAtom);
 	const handleClick = async () => {
-		if (itemData.isLocalOnly) {
-			deleteItem(itemData);
-			hideModal();
-			return;
-		}
-		deleteMutation.mutate({ itemId: itemData.id });
+		confirmWithModal({
+			content: "This item will be deleted forever",
+			header: "Are you sure?",
+			callback: () => {
+				if (itemData.isLocalOnly) {
+					deleteItem(itemData);
+					hideModal();
+					return;
+				}
+				deleteMutation.mutate({ itemId: itemData.id });
+			},
+		});
 	};
 	return (
 		<button

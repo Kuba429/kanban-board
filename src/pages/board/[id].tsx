@@ -10,6 +10,7 @@ import { trpc } from "../../utils/trpc";
 import Column from "../../components/Column";
 import { columnsScrollAtom } from "../../stores/scrolls";
 import { throttle } from "../../utils/throttle";
+import { ConfirmModal, confirmModalAtom } from "../../components/ConfirmModal";
 
 const Board: NextPage = () => {
 	const { id } = useRouter().query;
@@ -24,10 +25,12 @@ const Board: NextPage = () => {
 		query.data && setColumns(query.data.columns);
 	}, [query.data, setColumns]);
 	const [itemModal] = useAtom(modalAtom);
+	const [confirmModal] = useAtom(confirmModalAtom);
 	return (
 		<Layout>
 			<Columns />
 			{itemModal && <ItemModal modalState={itemModal} />}
+			{confirmModal && <ConfirmModal />}
 		</Layout>
 	);
 };
