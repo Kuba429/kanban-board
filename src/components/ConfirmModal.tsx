@@ -49,11 +49,19 @@ export const ConfirmModal = () => {
 				style={{ ...style, marginLeft: margin.x }}
 				className="fixed z-30 flex flex-col rounded border border-white/25 bg-black-800 px-10 text-white"
 			>
-				<h2>{modalState.header}</h2>
-				<p>{modalState.content}</p>
-				<div className="m-auto flex gap-2">
-					<button onClick={hideModal}>Cancel</button>
+				<h2 className="my-10 text-center text-2xl">
+					{modalState.header}
+				</h2>
+				<p className="text-center text-xl text-black-100">
+					{modalState.content}
+				</p>
+				<div className="h-full"></div>
+				<div className="grid h-fit w-full grid-cols-2 gap-5 py-5">
+					<button className="btn" onClick={hideModal}>
+						Cancel
+					</button>
 					<button
+						className="btn-contrast"
 						onClick={() => {
 							modalState.callback();
 							hideModal();
