@@ -1,8 +1,8 @@
 import { animated, type SpringRef, useSpring } from "@react-spring/web";
-import { useDrag } from "@use-gesture/react";
-import { useAtom } from "jotai";
+import { FullGestureState, useDrag } from "@use-gesture/react";
+import { SetStateAction, useAtom } from "jotai";
 import { MdDragIndicator } from "react-icons/md";
-import { useEffect, useRef, type FC } from "react";
+import { MutableRefObject, RefObject, useEffect, useRef, type FC } from "react";
 import { columnPositions } from "../components/Column";
 import { type Column, columnsAtom } from "../stores/columns";
 import { sleep } from "../utils/sleep";
@@ -65,129 +65,22 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 	const [columns, setColumns] = useAtom(columnsAtom); // used to get new indexes of all items
 	const mutation = trpc.item.moveItem.useMutation();
 	const [style, api] = useSpring(() => ({ to: { x: 0, y: 0 } }));
-	let ogY: number | null = null; // y before item was dragged
+	const ogY = useRef<number | null>(null);
 	const itemRef = useRef<HTMLDivElement>(null);
 	const bind = useDrag(async (state) => {
 		if (state.down) {
-			const itemsLocal = copyMap(itemsPositions);
-			api.start({
-				to: { x: state.movement[0], y: state.movement[1] },
-				config: { duration: 20 },
-			});
-			const rect = itemRef.current?.getBoundingClientRect();
-			if (!rect) {
-				resetRelative(itemsPositions);
-				return;
-			}
-			const { left: x, top: y, width, height } = rect;
-			if (!ogY) {
-				ogY = y;
-			}
-			const col = getColliding({
-				x,
-				y,
-				height,
-				width,
-			});
-			if (col) {
-				const { collidingId } = col;
-				const parent = columnPositions.get(parentId);
-				const target = columnPositions.get(collidingId);
-				if (!parent || !target) {
-					resetRelative(itemsPositions);
-					return;
-				}
-				for (const i of itemsLocal) {
-					const [itemId, itemValue] = i;
-					if (itemId === item.id) continue;
-					if (collidingId === itemValue.parentId) {
-						if (collidingId && itemValue.y >= y) {
-							const fromMap = itemsLocal.get(itemId)!;
-							fromMap.relY += GAP + height;
-							itemsLocal.set(itemId, fromMap);
-						}
-					}
-					if (parentId === itemValue.parentId && itemValue.y > ogY) {
-						const fromMap = itemsLocal.get(itemId)!;
-						fromMap.relY -= GAP + height;
-						itemsLocal.set(itemId, fromMap);
-					}
-				}
-				itemsLocal.forEach(
-					(val, key) =>
-						key !== item.id &&
-						val.api.start({ to: { y: val.relY } })
-				);
-			}
+			handleDown({ api, state, itemRef, item, parentId, ogY });
 		} else {
-			const rect = itemRef.current?.getBoundingClientRect();
-			if (!rect) return;
-			const { left: x, top: y, width, height } = rect;
-			const col = getColliding({
-				x,
-				y,
-				height,
-				width,
+			handleNotDown({
+				api,
+				ogY,
+				itemRef,
+				item,
+				parentId,
+				mutation,
+				columns,
+				setColumns,
 			});
-			if (col) {
-				const { collidingId, colliding } = col;
-				const duration = 300;
-				const parent = columnPositions.get(parentId);
-				if (!parent) {
-					api.start({
-						to: { x: 0, y: 0 },
-						config: { duration },
-					});
-					return;
-				}
-				let oldOffset = 0; // old y, relative to the first item in the list
-				let newOffset = 0; // new y, relative to the first item in the new list
-				let newIndex = 0;
-
-				for (const i of itemsPositions) {
-					const [itemId, itemValue] = i;
-					if (itemId === item.id) continue;
-					if (
-						itemValue.parentId === parentId &&
-						itemValue.y < (ogY ?? -Infinity)
-					) {
-						oldOffset += itemValue.height + GAP;
-					}
-					if (
-						itemValue.parentId === collidingId &&
-						itemValue.y <= y
-					) {
-						newOffset += itemValue.height + GAP;
-						newIndex++;
-					}
-				}
-				api.start({
-					to: { x: colliding.x - parent.x, y: newOffset - oldOffset },
-					config: { duration },
-				});
-				ogY = null;
-				const newColumns = moveItem({
-					columns: columns,
-					itemId: item.id,
-					targetId: collidingId,
-					parentId,
-					newIndex,
-				});
-				const newIndexes = getNewItemIndexes(newColumns, [
-					parentId,
-					collidingId,
-				]);
-				!item.isLocalOnly &&
-					mutation.mutate({
-						newColumnId: collidingId,
-						oldColumnId: parentId,
-						itemId: item.id,
-						newIndexes,
-					});
-				await sleep(duration);
-				setColumns(newColumns!);
-			}
-			resetRelative(itemsPositions);
 		}
 	});
 	const updatePosition = () => {
@@ -225,6 +118,166 @@ export const Item: FC<{ item: ItemType; parentId: string }> = ({
 			</animated.div>
 		</>
 	);
+};
+
+const handleDown = ({
+	api,
+	state,
+	itemRef,
+	parentId,
+	ogY,
+	item,
+}: {
+	api: SpringRef<{
+		x: number;
+		y: number;
+	}>;
+	ogY: MutableRefObject<number | null>;
+	state: Omit<FullGestureState<"drag">, "event"> & {
+		event: PointerEvent | MouseEvent | TouchEvent | KeyboardEvent;
+	};
+	itemRef: RefObject<HTMLDivElement>;
+	parentId: string;
+	item: ItemType;
+}) => {
+	const itemsLocal = copyMap(itemsPositions);
+	api.start({
+		to: { x: state.movement[0], y: state.movement[1] },
+		config: { duration: 20 },
+	});
+	const rect = itemRef.current?.getBoundingClientRect();
+	if (!rect) {
+		resetRelative(itemsPositions);
+		return;
+	}
+	const { left: x, top: y, width, height } = rect;
+	if (!ogY.current) {
+		ogY.current = y;
+	}
+	const col = getColliding({
+		x,
+		y,
+		height,
+		width,
+	});
+	if (col) {
+		const { collidingId } = col;
+		const parent = columnPositions.get(parentId);
+		const target = columnPositions.get(collidingId);
+		if (!parent || !target) {
+			resetRelative(itemsPositions);
+			return;
+		}
+		for (const i of itemsLocal) {
+			const [itemId, itemValue] = i;
+			if (itemId === item.id) continue;
+			if (collidingId === itemValue.parentId) {
+				if (collidingId && itemValue.y >= y) {
+					const fromMap = itemsLocal.get(itemId)!;
+					fromMap.relY += GAP + height;
+					itemsLocal.set(itemId, fromMap);
+				}
+			}
+			if (parentId === itemValue.parentId && itemValue.y > ogY.current) {
+				const fromMap = itemsLocal.get(itemId)!;
+				fromMap.relY -= GAP + height;
+				itemsLocal.set(itemId, fromMap);
+			}
+		}
+		itemsLocal.forEach(
+			(val, key) =>
+				key !== item.id && val.api.start({ to: { y: val.relY } })
+		);
+	}
+};
+type itemMutationType = ReturnType<typeof trpc.item.moveItem.useMutation>;
+const handleNotDown = async ({
+	itemRef,
+	parentId,
+	api,
+	item,
+	columns,
+	mutation,
+	setColumns,
+	ogY,
+}: {
+	itemRef: RefObject<HTMLDivElement>;
+	parentId: string;
+	ogY: MutableRefObject<number | null>;
+	api: SpringRef<{
+		x: number;
+		y: number;
+	}>;
+	item: ItemType;
+	columns: Column[];
+	mutation: itemMutationType;
+	setColumns: (update: SetStateAction<Column[]>) => void;
+}) => {
+	const rect = itemRef.current?.getBoundingClientRect();
+	if (!rect) return;
+	const { left: x, top: y, width, height } = rect;
+	const col = getColliding({
+		x,
+		y,
+		height,
+		width,
+	});
+	if (col) {
+		const { collidingId, colliding } = col;
+		const duration = 300;
+		const parent = columnPositions.get(parentId);
+		if (!parent) {
+			api.start({
+				to: { x: 0, y: 0 },
+				config: { duration },
+			});
+			return;
+		}
+		let oldOffset = 0; // old y, relative to the first item in the list
+		let newOffset = 0; // new y, relative to the first item in the new list
+		let newIndex = 0;
+
+		for (const i of itemsPositions) {
+			const [itemId, itemValue] = i;
+			if (itemId === item.id) continue;
+			if (
+				itemValue.parentId === parentId &&
+				itemValue.y < (ogY.current ?? -Infinity)
+			) {
+				oldOffset += itemValue.height + GAP;
+			}
+			if (itemValue.parentId === collidingId && itemValue.y <= y) {
+				newOffset += itemValue.height + GAP;
+				newIndex++;
+			}
+		}
+		api.start({
+			to: { x: colliding.x - parent.x, y: newOffset - oldOffset },
+			config: { duration },
+		});
+		ogY.current = null;
+		const newColumns = moveItem({
+			columns: columns,
+			itemId: item.id,
+			targetId: collidingId,
+			parentId,
+			newIndex,
+		});
+		const newIndexes = getNewItemIndexes(newColumns, [
+			parentId,
+			collidingId,
+		]);
+		!item.isLocalOnly &&
+			mutation.mutate({
+				newColumnId: collidingId,
+				oldColumnId: parentId,
+				itemId: item.id,
+				newIndexes,
+			});
+		await sleep(duration);
+		setColumns(newColumns!);
+	}
+	resetRelative(itemsPositions);
 };
 
 const moveItem = ({
