@@ -175,13 +175,11 @@ const handleDown = ({
 				if (collidingId && itemValue.y >= y) {
 					const fromMap = itemsLocal.get(itemId)!;
 					fromMap.relY += GAP + height;
-					itemsLocal.set(itemId, fromMap);
 				}
 			}
 			if (parentId === itemValue.parentId && itemValue.y > ogY.current) {
 				const fromMap = itemsLocal.get(itemId)!;
 				fromMap.relY -= GAP + height;
-				itemsLocal.set(itemId, fromMap);
 			}
 		}
 		itemsLocal.forEach(
