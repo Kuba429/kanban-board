@@ -188,7 +188,39 @@ const handleDown = ({
 		);
 	}
 };
-type itemMutationType = ReturnType<typeof trpc.item.moveItem.useMutation>;
+const getNewPosition = ({
+	item,
+	parentId,
+	ogY,
+	collidingId,
+	y,
+}: {
+	item: ItemType;
+	parentId: string;
+	ogY: MutableRefObject<number | null>;
+	collidingId: string;
+	y: number;
+}) => {
+	let oldOffset = 0; // old y, relative to the first item in the list
+	let newOffset = 0; // new y, relative to the first item in the new list
+	let newIndex = 0;
+
+	for (const i of itemsPositions) {
+		const [itemId, itemValue] = i;
+		if (itemId === item.id) continue;
+		if (
+			itemValue.parentId === parentId &&
+			itemValue.y < (ogY.current ?? -Infinity)
+		) {
+			oldOffset += itemValue.height + GAP;
+		}
+		if (itemValue.parentId === collidingId && itemValue.y <= y) {
+			newOffset += itemValue.height + GAP;
+			newIndex++;
+		}
+	}
+	return { oldOffset, newOffset, newIndex };
+};
 const handleNotDown = async ({
 	itemRef,
 	parentId,
@@ -208,7 +240,7 @@ const handleNotDown = async ({
 	}>;
 	item: ItemType;
 	columns: Column[];
-	mutation: itemMutationType;
+	mutation: ReturnType<typeof trpc.item.moveItem.useMutation>;
 	setColumns: (update: SetStateAction<Column[]>) => void;
 }) => {
 	const rect = itemRef.current?.getBoundingClientRect();
@@ -231,24 +263,14 @@ const handleNotDown = async ({
 			});
 			return;
 		}
-		let oldOffset = 0; // old y, relative to the first item in the list
-		let newOffset = 0; // new y, relative to the first item in the new list
-		let newIndex = 0;
+		const { oldOffset, newOffset, newIndex } = getNewPosition({
+			item,
+			parentId,
+			y,
+			ogY,
+			collidingId,
+		});
 
-		for (const i of itemsPositions) {
-			const [itemId, itemValue] = i;
-			if (itemId === item.id) continue;
-			if (
-				itemValue.parentId === parentId &&
-				itemValue.y < (ogY.current ?? -Infinity)
-			) {
-				oldOffset += itemValue.height + GAP;
-			}
-			if (itemValue.parentId === collidingId && itemValue.y <= y) {
-				newOffset += itemValue.height + GAP;
-				newIndex++;
-			}
-		}
 		api.start({
 			to: { x: colliding.x - parent.x, y: newOffset - oldOffset },
 			config: { duration },
