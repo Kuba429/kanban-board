@@ -5,6 +5,7 @@ import { addItemAtom, type Column as ColumnType } from "../stores/columns";
 import { Item } from "./Item";
 import { columnsScrollAtom } from "../stores/scrolls";
 import { trpc } from "../utils/trpc";
+import { confirmModalAtom } from "./ConfirmModal";
 
 const Column: FC<{ column: ColumnType }> = ({ column }) => {
 	const deleteColumnMutation = trpc.column.deleteColumn.useMutation();
@@ -20,6 +21,16 @@ const Column: FC<{ column: ColumnType }> = ({ column }) => {
 	useEffect(() => {
 		updatePosition();
 	}, [columnsScroll, columnsCount, column, updatePosition]);
+	const [, confirmWithModal] = useAtom(confirmModalAtom);
+	const handleDelete = async () => {
+		confirmWithModal({
+			content: "This column and all of its items will be deleted forever",
+			header: "Are you sure?",
+			callback: () => {
+				deleteColumnMutation.mutate({ columnId: column.id });
+			},
+		});
+	};
 	return (
 		<div
 			data-testid="column"
@@ -28,9 +39,7 @@ const Column: FC<{ column: ColumnType }> = ({ column }) => {
 			<div className="flex items-center justify-between p-3">
 				<h2 className="flex-grow text-xl">{column.title}</h2>
 				<div
-					onClick={() =>
-						deleteColumnMutation.mutate({ columnId: column.id })
-					}
+					onClick={handleDelete}
 					data-testid="add-item-button"
 					className="btn-icon"
 				>
