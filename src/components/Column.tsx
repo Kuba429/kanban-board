@@ -1,11 +1,13 @@
 import { useAtom } from "jotai";
 import { type FC, useEffect, useRef, useCallback } from "react";
-import { BiMessageSquareAdd } from "react-icons/bi";
+import { BiMessageSquareAdd, BiTrash } from "react-icons/bi";
 import { addItemAtom, type Column as ColumnType } from "../stores/columns";
 import { Item } from "./Item";
 import { columnsScrollAtom } from "../stores/scrolls";
+import { trpc } from "../utils/trpc";
 
 const Column: FC<{ column: ColumnType }> = ({ column }) => {
+	const deleteColumnMutation = trpc.column.deleteColumn.useMutation();
 	const columnRef = useRef<HTMLDivElement>(null);
 	const [columnsCount, addItem] = useAtom(addItemAtom);
 	const updatePosition = useCallback(() => {
@@ -24,7 +26,16 @@ const Column: FC<{ column: ColumnType }> = ({ column }) => {
 			className="flex h-4/5 w-72 flex-col rounded-xl border border-white/25 bg-black-800 text-white"
 		>
 			<div className="flex items-center justify-between p-3">
-				<h2 className="text-xl">{column.title}</h2>
+				<h2 className="flex-grow text-xl">{column.title}</h2>
+				<div
+					onClick={() =>
+						deleteColumnMutation.mutate({ columnId: column.id })
+					}
+					data-testid="add-item-button"
+					className="btn-icon"
+				>
+					<BiTrash />
+				</div>
 				<div
 					onClick={() => addItem(column.id)}
 					data-testid="add-item-button"

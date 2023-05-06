@@ -23,4 +23,23 @@ export const columnRouter = router({
 				})
 			).columns[0];
 		}),
+	deleteColumn: publicProcedure
+		.input(z.object({ columnId: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			const email = ctx.session?.user?.email;
+			if (!email) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "Please sign in",
+				});
+			}
+			prisma?.$transaction([
+				ctx.prisma.item.deleteMany({
+					where: { columnId: { equals: input.columnId } },
+				}),
+				ctx.prisma.column.delete({
+					where: { id: input.columnId },
+				}),
+			]);
+		}),
 });
