@@ -4,6 +4,7 @@ import {
 	type Item as ItemPrisma,
 	type Column as ColumnPrisma,
 } from "@prisma/client";
+import Column from "../components/Column";
 
 //const columnWithItems = Prisma.validator<Prisma.ColumnArgs>()({
 //	include: { items: true },
@@ -21,6 +22,10 @@ export const columnsAtom = atom<Column[]>([]);
 export const addColumnAtom = atom(null, (get, set, update: Column) => {
 	const columns = [...get(columnsAtom)];
 	columns.push(update);
+	set(columnsAtom, columns);
+});
+export const deleteColumnAtom = atom(null, (get, set, update: Column["id"]) => {
+	const columns = get(columnsAtom).filter((c) => c.id !== update);
 	set(columnsAtom, columns);
 });
 export const updateItemAtom = atom(

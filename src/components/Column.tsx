@@ -1,7 +1,11 @@
 import { useAtom } from "jotai";
 import { type FC, useEffect, useRef, useCallback } from "react";
 import { BiMessageSquareAdd, BiTrash } from "react-icons/bi";
-import { addItemAtom, type Column as ColumnType } from "../stores/columns";
+import {
+	addItemAtom,
+	deleteColumnAtom,
+	type Column as ColumnType,
+} from "../stores/columns";
 import { Item } from "./Item";
 import { columnsScrollAtom } from "../stores/scrolls";
 import { trpc } from "../utils/trpc";
@@ -9,6 +13,7 @@ import { confirmModalAtom } from "./ConfirmModal";
 
 const Column: FC<{ column: ColumnType }> = ({ column }) => {
 	const deleteColumnMutation = trpc.column.deleteColumn.useMutation();
+	const [, deleteColumn] = useAtom(deleteColumnAtom);
 	const columnRef = useRef<HTMLDivElement>(null);
 	const [columnsCount, addItem] = useAtom(addItemAtom);
 	const updatePosition = useCallback(() => {
@@ -27,6 +32,7 @@ const Column: FC<{ column: ColumnType }> = ({ column }) => {
 			content: "This column and all of its items will be deleted forever",
 			header: "Are you sure?",
 			callback: () => {
+				deleteColumn(column.id);
 				deleteColumnMutation.mutate({ columnId: column.id });
 			},
 		});
