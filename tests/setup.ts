@@ -17,6 +17,11 @@ beforeAll(() => {
 					useMutation: useMutationMock,
 				},
 			},
+			column: {
+				deleteColumn: {
+					useMutation: useMutationMock,
+				},
+			},
 		},
 	}));
 });

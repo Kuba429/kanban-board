@@ -46,7 +46,7 @@ const Column: FC<{ column: ColumnType }> = ({ column }) => {
 				<h2 className="flex-grow text-xl">{column.title}</h2>
 				<div
 					onClick={handleDelete}
-					data-testid="add-item-button"
+					data-testid="delete-column-button"
 					className="btn-icon"
 				>
 					<BiTrash />
