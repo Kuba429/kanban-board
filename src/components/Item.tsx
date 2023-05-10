@@ -201,12 +201,11 @@ const getNewPosition = ({
 	collidingId: string;
 	y: number;
 }) => {
-	let oldOffset = 0; // old y, relative to the first item in the list
-	let newOffset = 0; // new y, relative to the first item in the new list
-	let newIndex = 0;
+	let oldOffset = 0, // old y, relative to the first item in the list
+		newOffset = 0, // new y, relative to the first item in the new list
+		newIndex = 0;
 
-	for (const i of itemsPositions) {
-		const [itemId, itemValue] = i;
+	for (const [itemId, itemValue] of itemsPositions) {
 		if (itemId === item.id) continue;
 		if (
 			itemValue.parentId === parentId &&

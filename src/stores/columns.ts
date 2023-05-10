@@ -87,3 +87,5 @@ export const deleteItemAtom = atom(null, (get, set, itemData: Item) => {
 	console.log(a);
 	set(columnsAtom, columns);
 });
+
+export const columnCountAtom = atom((get) => get(columnsAtom).length);

@@ -1,8 +1,9 @@
 import { useAtom } from "jotai";
-import { type FC, useEffect, useRef, useCallback } from "react";
+import { type FC, useEffect, useRef } from "react";
 import { BiMessageSquareAdd, BiTrash } from "react-icons/bi";
 import {
 	addItemAtom,
+	columnCountAtom,
 	deleteColumnAtom,
 	type Column as ColumnType,
 } from "../stores/columns";
@@ -15,17 +16,20 @@ const Column: FC<{ column: ColumnType }> = ({ column }) => {
 	const deleteColumnMutation = trpc.column.deleteColumn.useMutation();
 	const [, deleteColumn] = useAtom(deleteColumnAtom);
 	const columnRef = useRef<HTMLDivElement>(null);
-	const [columnsCount, addItem] = useAtom(addItemAtom);
-	const updatePosition = useCallback(() => {
-		const rect = columnRef.current?.getBoundingClientRect();
-		if (!rect) return;
+	const [, addItem] = useAtom(addItemAtom);
+	const [columnCount] = useAtom(columnCountAtom);
+	const [columnsScroll] = useAtom(columnsScrollAtom);
+
+	useEffect(() => {
+		if (!columnRef.current) {
+			columnPositions.delete(column.id);
+			return;
+		}
+		const rect = columnRef.current.getBoundingClientRect();
 		const { x, y, width, height } = rect;
 		columnPositions.set(column.id, { x, y, width, height });
-	}, [columnRef]);
-	const [columnsScroll] = useAtom(columnsScrollAtom);
-	useEffect(() => {
-		updatePosition();
-	}, [columnsScroll, columnsCount, column, updatePosition]);
+	}, [columnsScroll, column, columnRef, columnCount]);
+
 	const [, confirmWithModal] = useAtom(confirmModalAtom);
 	const handleDelete = async () => {
 		confirmWithModal({
